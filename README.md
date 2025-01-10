@@ -9,6 +9,22 @@ This repository serves as a centralized **Jenkins Shared Library**, designed to 
 - **Consistency**: Standardize CI/CD workflows across all projects.
 - **Ease of Maintenance**: Centralized updates to shared logic.
 
+## Structure
+```groovy
+jenkins-shared-library/
+├── vars/
+│   ├── commonPipeline.groovy       # Consolidated common pipeline logic
+├── src/
+│   └── org/
+│       └── mycompany/
+│           └── utils/
+│               └── HelperClass.groovy  # Utility classes (if needed)
+├── resources/                       # Resource files (optional)
+├── .gitignore                       # Ignored files and directories
+├── README.md                        # Documentation
+
+```
+
 ## How to Use
 
 ### Configure the Library in Jenkins
