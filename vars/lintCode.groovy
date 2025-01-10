@@ -1,5 +1,4 @@
 def call(Map args) {
-    stage('Lint Code') {
        
             script {
                 // Define variables from args
@@ -33,4 +32,4 @@ def call(Map args) {
             }
         }
     }
-}
+
