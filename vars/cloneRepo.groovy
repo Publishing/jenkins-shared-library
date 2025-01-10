@@ -28,7 +28,7 @@ def call(Map args) {
             }
             // Verify the directory contents
             echo "Verifying contents of ${RELEASE_NAME}..."
-            sh "ls -l"
+            sh "ls -l && cat Pipfile"
         }
     }
 }
