@@ -1,8 +1,24 @@
-def call(Map config) {
+def call(Map args) {
     stage('Deploy to Server') {
         steps {
             script {
+                // Define variables from args
+                def releaseName = args.releaseName
+                def targetServerUser = args.targetServerUser
+                def targetDir = args.targetDir
+                def deployScriptPath = args.deployScriptPath
+                def dbScriptPath = args.dbScriptPath
+                def htmlReportPath = args.htmlReportPath
+                def deploymentLogs = args.deploymentLogs
+                def appName = args.appName
+
+                // Validate required variables
+                if (!releaseName || !targetServerUser || !targetDir || !deployScriptPath || !dbScriptPath || !htmlReportPath || !deploymentLogs || !appName) {
+                    error "Missing required variables for deployment. Ensure all required arguments are provided in the configuration."
+                }
+
                 if (params.SELECT_TARGET_OPTION == 'ENVIRONMENT') {
+                    // Determine target servers based on environment
                     def targetServers = []
                     if (params.TARGET_ENVIRONMENT == 'test') {
                         targetServers = ['djangopytest.rtegroup.ie']
@@ -18,30 +34,29 @@ def call(Map config) {
                         targetServers = [] // Add production servers here if needed
                     }
 
+                    // Deploy to target servers in parallel
                     def parallelStages = targetServers.collectEntries { target ->
                         ["Deploy to ${target}": {
                             script {
-                                deployToTarget(target)
+                                deployToTarget(target, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName)
                             }
                         }]
                     }
                     parallel parallelStages
                 } else {
                     // Single deployment for a specific server
-                    deployToTarget(params.TARGET_SERVER)
+                    deployToTarget(params.TARGET_SERVER, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName)
                 }
             }
         }
     }
 }
-
-def deployToTarget(target) {
-    sh "scp ${env.RELEASE_NAME}.tar ${env.TARGET_SERVER_USER}@${target}:${env.TARGET_DIR}"
-    sh "sh ${env.DEPLOY_SCRIPT_PATH} ${env.RELEASE_NAME} ${env.TARGET_SERVER_USER} ${target} ${env.TARGET_DIR} ${params.SETTINGS_FILE} ${env.DEPLOYMENT_LOGS} ${env.APP_NAME} ${params.TARGET_ENVIRONMENT}"
-    sh "sh ${env.DB_SCRIPT_PATH} ${params.BRANCH} ${params.DEPLOYER} ${currentBuild.currentResult} ${target} ${params.SETTINGS_FILE} ${env.APP_NAME} ${env.BUILD_URL} ${env.APPROVER} ${env.BUILD_NUMBER}"
-    sh "python ${HTML_REPORT_PATH}"
-    sh "scp ${env.TARGET_SERVER_USER}@${target}:${env.DEPLOYMENT_LOGS}/${env.APP_NAME} ${env.APP_NAME}_target_log"
-    sh "cat ${env.APP_NAME}_target_log"
-    sh "rm -rf ${env.APP_NAME}_target_log"
+def deployToTarget(target, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName) {
+    sh "scp ${releaseName}.tar ${targetServerUser}@${target}:${targetDir}"
+    sh "sh ${deployScriptPath} ${releaseName} ${targetServerUser} ${target} ${targetDir} ${params.SETTINGS_FILE} ${deploymentLogs} ${appName} ${params.TARGET_ENVIRONMENT}"
+    sh "sh ${dbScriptPath} ${params.BRANCH} ${params.DEPLOYER} ${currentBuild.currentResult} ${target} ${params.SETTINGS_FILE} ${appName} ${env.BUILD_URL} ${env.APPROVER} ${env.BUILD_NUMBER}"
+    sh "python ${htmlReportPath}"
+    sh "scp ${targetServerUser}@${target}:${deploymentLogs}/${appName} ${appName}_target_log"
+    sh "cat ${appName}_target_log"
+    sh "rm -rf ${appName}_target_log"
 }
-
