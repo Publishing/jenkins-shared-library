@@ -13,7 +13,7 @@ def call(Map args) {
 
                 // Navigate to the release directory
                 dir(releaseName) {
-                        sh "pwd"
+                        
                     catchError(buildResult: 'FAILURE') {
                         if (params.VERBOSE_LOGS) { // Directly use params.VERBOSE_LOGS
                             echo "Installing dependencies with verbose logs..."
