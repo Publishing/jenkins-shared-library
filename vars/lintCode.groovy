@@ -1,18 +1,19 @@
-def call(Map config) {
+def call(Map args) {
     stage('Lint Code') {
         steps {
             script {
+                // Define variables from args
+                def releaseName = args.releaseName
+                def tmpDir = args.tmpDir ?: '/tmp' // Use fallback if tmpDir is not provided
+
                 // Validate required parameters
-                if (!config.releaseName) {
+                if (!releaseName) {
                     error "releaseName is required but not provided in the configuration."
                 }
 
-                // Ensure TMP_DIR is passed or fallback to default
-                def tmpDir = config.tmpDir ?: '/tmp'
-
                 // Navigate to the release directory
-                dir(config.releaseName) {
-                    echo "Installing and running ruff linter in ${config.releaseName}..."
+                dir(releaseName) {
+                    echo "Installing and running ruff linter in ${releaseName}..."
                     
                     // Install ruff linter
                     sh "pipenv run pip install ruff > ${tmpDir}/lint_install.log"
