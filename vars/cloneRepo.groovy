@@ -28,9 +28,7 @@ def call(Map args) {
             } else {
                 error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
             }
-            // Verify the directory contents
-            echo "Verifying contents of ${RELEASE_NAME}..."
-            sh "ls -l && cat Pipfile || echo 'No Pipfile found'"
+         
         }
         // Return the release name for reference in subsequent stages
         return RELEASE_NAME
