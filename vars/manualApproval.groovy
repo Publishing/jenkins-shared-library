@@ -3,7 +3,7 @@ def call(Map args) {
         when {
             expression { return params.SELECT_WORK_FLOW == 'CI-CD' } // Access pipeline parameter directly
         }
-        steps {
+      
             script {
                 // Define optional variables from args
                 def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
@@ -29,6 +29,6 @@ def call(Map args) {
                     env.approver = approval // Retain the original approver's ID if email is not available
                 }
             }
-        }
+        
     }
 }
