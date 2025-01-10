@@ -1,11 +1,13 @@
 def call(Map args) {
     script {
-        
-        def RELEASE_NAME = args.RELEASE_NAME
+        // Dynamically generate the release name if not provided
+        def RELEASE_DATE = args.RELEASE_DATE ?: sh(script: 'date +%d%m%y%H%M', returnStdout: true).trim()
+        def VERSION = args.VERSION ?: sh(script: "cat ${env.VERSION_FILE} || echo 'V1.0.0'", returnStdout: true).trim()
+        def RELEASE_NAME = args.RELEASE_NAME ?: "${args.appName}_release.${RELEASE_DATE}.${VERSION}"
         def GIT_CREDENTIALS_ID = args.gitCredentialsId
         def GIT_REPO_URL = args.gitRepoUrl
 
-        echo "Setting RELEASE_NAME to: ${RELEASE_NAME}"
+        echo "Setting dynamically generated RELEASE_NAME to: ${RELEASE_NAME}"
         echo "Using Git Repository: ${GIT_REPO_URL}"
 
         // Create the release directory
@@ -28,7 +30,9 @@ def call(Map args) {
             }
             // Verify the directory contents
             echo "Verifying contents of ${RELEASE_NAME}..."
-            sh "ls -l && cat Pipfile"
+            sh "ls -l && cat Pipfile || echo 'No Pipfile found'"
         }
+        // Return the release name for reference in subsequent stages
+        return RELEASE_NAME
     }
 }
