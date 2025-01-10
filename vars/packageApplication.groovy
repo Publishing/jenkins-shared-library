@@ -3,7 +3,7 @@ def call(Map args) {
         when {
             expression { return params.SELECT_WORK_FLOW == 'CI-CD' } // Access pipeline parameter directly
         }
-        steps {
+    
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
@@ -23,4 +23,4 @@ def call(Map args) {
             }
         }
     }
-}
+
