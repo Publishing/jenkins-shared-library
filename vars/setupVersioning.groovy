@@ -2,11 +2,7 @@ def call(Map args) {
 
         
             script {
-                    // Create the release directory
-                    sh "mkdir -p ${RELEASE_NAME}"
                     
-                    // Navigate to the release directory
-                    dir(env.RELEASE_NAME) {
                 def versionFile = args.versionFile
                 def appName = args.appName
                 
@@ -21,4 +17,4 @@ def call(Map args) {
                 echo "Release name: ${env.RELEASE_NAME}"
             }
         }
-}
+
