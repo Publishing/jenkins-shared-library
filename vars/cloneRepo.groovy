@@ -25,9 +25,6 @@ def call(Map args) {
                 error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
             }
 
-            // Debug: Log the current commit and list files
-            sh "git rev-parse HEAD"
-            sh "ls -l && cat Pipfile"
         }
     }
 }
