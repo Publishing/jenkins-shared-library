@@ -1,6 +1,6 @@
 def call(Map args) {
     stage('Deploy to Server') {
-        steps {
+        
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
@@ -47,7 +47,7 @@ def call(Map args) {
                     // Single deployment for a specific server
                     deployToTarget(params.TARGET_SERVER, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName)
                 }
-            }
+            
         }
     }
 }
