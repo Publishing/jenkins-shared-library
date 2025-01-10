@@ -1,5 +1,5 @@
 def call(Map args) {
-    stage('Install Dependencies') {
+
         
             script {
                 // Define variables from args
@@ -26,4 +26,4 @@ def call(Map args) {
             
         }
     }
-}
+
