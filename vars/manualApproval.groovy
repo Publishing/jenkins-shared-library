@@ -1,5 +1,5 @@
 def call(Map args) {
-    stage('Manual Approval') {
+
         script {
             // Check if the workflow is CI-CD
             if (params.SELECT_WORK_FLOW == 'CI-CD') {
@@ -31,4 +31,4 @@ def call(Map args) {
             }
         }
     }
-}
+
