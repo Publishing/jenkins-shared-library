@@ -1,5 +1,4 @@
 def call(Map args) {
-    stage('Deploy to Server') {
         
             script {
                 // Define variables from args
@@ -50,7 +49,7 @@ def call(Map args) {
             
         }
     }
-}
+
 def deployToTarget(target, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName) {
     sh "scp ${releaseName}.tar ${targetServerUser}@${target}:${targetDir}"
     sh "sh ${deployScriptPath} ${releaseName} ${targetServerUser} ${target} ${targetDir} ${params.SETTINGS_FILE} ${deploymentLogs} ${appName} ${params.TARGET_ENVIRONMENT}"
