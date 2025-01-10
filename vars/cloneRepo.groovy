@@ -1,5 +1,4 @@
 def call(Map args) {
-    stage('Clone Repository') {
         
             script {
                 // Define variables from args or defaults
@@ -31,4 +30,4 @@ def call(Map args) {
             
         }
     }
-}
+
