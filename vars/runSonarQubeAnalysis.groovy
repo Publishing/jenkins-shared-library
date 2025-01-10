@@ -1,38 +1,55 @@
-def call() {
+def call(Map args) {
     stage('SonarQube Analysis') {
         steps {
             script {
-                dir(env.RELEASE_NAME) {
+                // Define variables from args
+                def releaseName = args.releaseName
+                def appName = args.appName
+                def sonarHost = args.sonarHost ?: 'http://localhost:9000/sonar' // Default SonarQube host
+                def sonarToken = args.sonarToken
+                def pythonVersion = args.pythonVersion ?: '3.11' // Default Python version
+                def coverageReportPath = args.coverageReportPath ?: 'coverage.xml'
+
+                // Validate required parameters
+                if (!releaseName || !appName || !sonarToken) {
+                    error "releaseName, appName, and sonarToken are required but not provided in the configuration."
+                }
+
+                dir(releaseName) {
                     try {
+                        echo "Running SonarQube analysis for project: ${appName}.app"
+                        
                         // Run SonarQube analysis
                         sh """
                         sonar-scanner \
-                        -Dsonar.projectKey=${env.APP_NAME}.app \
+                        -Dsonar.projectKey=${appName}.app \
                         -Dsonar.sources=. \
-                        -Dsonar.host.url=http://localhost:9000/sonar \
-                        -Dsonar.login=${env.SONAR_TOKEN} \
-                        -Dsonar.python.version=3.11 \
-                        -Dsonar.python.coverage.reportPaths=coverage.xml
+                        -Dsonar.host.url=${sonarHost} \
+                        -Dsonar.login=${sonarToken} \
+                        -Dsonar.python.version=${pythonVersion} \
+                        -Dsonar.python.coverage.reportPaths=${coverageReportPath}
                         """
 
-                        // Capture the SonarQube Quality Gate status and dashboard URL
-                        env.SONAR_URL = "https://djg-jenkins.rtegroup.ie/sonar/dashboard?id=${env.APP_NAME}.app"
+                        // Set SonarQube dashboard URL
+                        def sonarUrl = "${sonarHost}/dashboard?id=${appName}.app"
+                        echo "SonarQube dashboard URL: ${sonarUrl}"
+                        env.SONAR_URL = sonarUrl
 
-                        // Retrieve the SonarQube quality gate status with debugging
+                        // Retrieve the SonarQube quality gate status
                         def response = sh(
-                            script: "curl -s -u ${env.SONAR_TOKEN}: http://localhost:9000/sonar/api/qualitygates/project_status?projectKey=${env.APP_NAME}.app", 
+                            script: "curl -s -u ${sonarToken}: ${sonarHost}/api/qualitygates/project_status?projectKey=${appName}.app",
                             returnStdout: true
                         ).trim()
 
                         // Debug: Output the raw response
                         echo "Raw SonarQube API Response: ${response}"
 
-                        // Check if the response is 404 or invalid
+                        // Check if the response is invalid
                         if (response.contains("HTTP Status 404")) {
                             error("SonarQube project not found: Received 404 Not Found from SonarQube API.")
                         }
 
-                        // Attempt to parse the response with jq
+                        // Parse the response to get quality gate status
                         try {
                             env.SONAR_STATUS = sh(script: "echo '${response}' | jq -r '.projectStatus.status'", returnStdout: true).trim()
                         } catch (Exception e) {
@@ -51,9 +68,6 @@ def call() {
                                 currentBuild.result = 'UNSTABLE'
                             }
                         }
-
-                        echo "SonarQube dashboard URL: ${env.SONAR_URL}"
-
                     } catch (Exception e) {
                         echo "Error during SonarQube analysis: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
