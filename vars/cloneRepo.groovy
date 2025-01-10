@@ -1,7 +1,7 @@
 def call(Map args) {
     script {
-        def RELEASE_DATE = args.RELEASE_DATE ?: sh(script: 'date +%d%m%y%H%M', returnStdout: true).trim()
-        def RELEASE_NAME = args.RELEASE_NAME ?: "${args.appName}_release.${RELEASE_DATE}"
+        
+        def RELEASE_NAME = args.RELEASE_NAME
         def GIT_CREDENTIALS_ID = args.gitCredentialsId
         def GIT_REPO_URL = args.gitRepoUrl
 
