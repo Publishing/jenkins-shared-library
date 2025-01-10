@@ -11,7 +11,7 @@ def call(Map args) {
                 error "releaseName and backupDir are required but not provided in the configuration."
             }
 
-          "
+          
 
             // Create tarball and copy to backup directory
             echo "Packaging application..."
