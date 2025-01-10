@@ -12,6 +12,8 @@ def call(Map args) {
 
                 // Navigate to the release directory
                 dir(releaseName) {
+                       sh "pwd"
+                       sh "ls -ltr"
                     echo "Installing and running ruff linter in ${releaseName}..."
                     
                     // Install ruff linter
