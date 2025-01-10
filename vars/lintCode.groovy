@@ -1,6 +1,6 @@
 def call(Map args) {
     stage('Lint Code') {
-        steps {
+       
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
@@ -29,7 +29,7 @@ def call(Map args) {
                     } else {
                         echo "Linting passed:\n${lintOutput}"
                     }
-                }
+                
             }
         }
     }
