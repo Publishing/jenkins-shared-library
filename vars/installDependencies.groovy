@@ -1,6 +1,6 @@
 def call(Map args) {
     stage('Install Dependencies') {
-        steps {
+        
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
@@ -23,7 +23,7 @@ def call(Map args) {
                         }
                     }
                 }
-            }
+            
         }
     }
 }
