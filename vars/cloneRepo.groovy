@@ -1,6 +1,6 @@
 def call(Map args) {
     stage('Clone Repository') {
-        steps {
+        
             script {
                 // Define variables from args or defaults
                 def RELEASE_DATE = args.RELEASE_DATE ?: sh(script: 'date +%d%m%y%H%M', returnStdout: true).trim()
@@ -28,7 +28,7 @@ def call(Map args) {
                         error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
                     }
                 }
-            }
+            
         }
     }
 }
