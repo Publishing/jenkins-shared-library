@@ -1,5 +1,5 @@
 def call(Map args) {
-    stage('Setup Versioning') {
+
         
             script {
                 def versionFile = args.versionFile
@@ -16,5 +16,4 @@ def call(Map args) {
                 echo "Release name: ${env.RELEASE_NAME}"
             }
         }
-    }
-
+    
