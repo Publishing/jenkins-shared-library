@@ -27,7 +27,7 @@ def call(Map args) {
 
             // Debug: Log the current commit and list files
             sh "git rev-parse HEAD"
-            sh "ls -l"
+            sh "ls -l && cat Pipfile"
         }
     }
 }
