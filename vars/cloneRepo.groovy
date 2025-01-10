@@ -19,12 +19,16 @@ def call(Map args) {
             } else if (params.SELECT_CLONING_OPTION == 'TAG') {
                 echo "Cloning repository and checking out tag: ${params.TAG}"
                 git credentialsId: GIT_CREDENTIALS_ID, url: GIT_REPO_URL
-                sh "git fetch --all"
-                sh "git checkout tags/${params.TAG}"
+                // Fetch all tags explicitly
+                sh "git fetch --tags"
+                // Checkout the specific tag
+                sh "git checkout -b temp-branch tags/${params.TAG}"
             } else {
                 error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
             }
-
+            // Verify the directory contents
+            echo "Verifying contents of ${RELEASE_NAME}..."
+            sh "ls -l"
         }
     }
 }
