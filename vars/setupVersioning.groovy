@@ -1,6 +1,6 @@
 def call(Map args) {
     stage('Setup Versioning') {
-        steps {
+        
             script {
                 def versionFile = args.versionFile
                 def appName = args.appName
@@ -17,4 +17,4 @@ def call(Map args) {
             }
         }
     }
-}
+
