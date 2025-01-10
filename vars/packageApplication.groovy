@@ -11,14 +11,7 @@ def call(Map args) {
                 error "releaseName and backupDir are required but not provided in the configuration."
             }
 
-            // Debug: Log current working directory and releaseName
-            echo "Current Working Directory: "
-            sh "pwd"
-            echo "Release Name: ${releaseName}"
-
-            // Debug: List contents of the release directory
-            echo "Contents of release directory (${releaseName}):"
-            sh "ls -l ${releaseName}"
+          "
 
             // Create tarball and copy to backup directory
             echo "Packaging application..."
