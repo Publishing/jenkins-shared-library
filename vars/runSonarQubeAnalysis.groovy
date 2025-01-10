@@ -1,5 +1,5 @@
 def call(Map args) {
-    stage('SonarQube Analysis') {
+ 
         
             script {
                 // Define variables from args
@@ -76,5 +76,5 @@ def call(Map args) {
                 }
             }
         }
-    }
+    
 
