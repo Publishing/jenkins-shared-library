@@ -24,25 +24,28 @@ def call(Map args) {
             """
         }
 
-        // Parse the email log
-        def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
-        def lintStatus = ""
-        def totalTests = ""
-        def timeTaken = ""
-        def testCoverage = ""
-        def failedCases = ""
+        // Default values for testing details
+        def lintStatus = "N/A"
+        def totalTests = "N/A"
+        def timeTaken = "N/A"
+        def testCoverage = "N/A"
+        def failedCases = "N/A"
 
-        emailLog.split('\n').each { line ->
-            if (line.startsWith('Lint Status:')) {
-                lintStatus = line.replace('Lint Status:', '').trim()
-            } else if (line.startsWith('Total Tests:')) {
-                totalTests = line.replace('Total Tests:', '').trim()
-            } else if (line.startsWith('Time Taken:')) {
-                timeTaken = line.replace('Time Taken:', '').trim()
-            } else if (line.startsWith('Test Coverage:')) {
-                testCoverage = line.replace('Test Coverage:', '').trim()
-            } else if (line.startsWith('Failed Case')) {
-                failedCases += line + "<br/>"
+        // Parse the email log if appName is "api" or "dotie"
+        if (appName in ['api', 'dotie']) {
+            def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
+            emailLog.split('\n').each { line ->
+                if (line.startsWith('Lint Status:')) {
+                    lintStatus = line.replace('Lint Status:', '').trim()
+                } else if (line.startsWith('Total Tests:')) {
+                    totalTests = line.replace('Total Tests:', '').trim()
+                } else if (line.startsWith('Time Taken:')) {
+                    timeTaken = line.replace('Time Taken:', '').trim()
+                } else if (line.startsWith('Test Coverage:')) {
+                    testCoverage = line.replace('Test Coverage:', '').trim()
+                } else if (line.startsWith('Failed Case')) {
+                    failedCases += line + "<br/>"
+                }
             }
         }
 
