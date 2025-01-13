@@ -26,7 +26,6 @@ def call(Map args) {
 
         // Parse the email log
         def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
-        def lintStatus = ""
         def totalTests = ""
         def timeTaken = ""
         def testCoverage = ""
@@ -34,9 +33,7 @@ def call(Map args) {
 
         if (appName in ['api', 'dotie']) {
             emailLog.split('\n').each { line ->
-                if (line.startsWith('Lint Status:')) {
-                    lintStatus = line.replace('Lint Status:', '').trim()
-                } else if (line.startsWith('Total Tests:')) {
+                if (line.startsWith('Total Tests:')) {
                     totalTests = line.replace('Total Tests:', '').trim()
                 } else if (line.startsWith('Time Taken:')) {
                     timeTaken = line.replace('Time Taken:', '').trim()
@@ -69,7 +66,6 @@ def call(Map args) {
             <tr style="background-color: lightblue;">
                 <th colspan="2" style="text-align: center;">TESTING DETAILS</th>
             </tr>
-            <tr><th>Lint Status</th><td>${lintStatus}</td></tr>
             <tr><th>Total Tests</th><td>${totalTests}</td></tr>
             <tr><th>Time Taken</th><td>${timeTaken}</td></tr>
             <tr><th>Test Coverage</th><td>${testCoverage}</td></tr>
