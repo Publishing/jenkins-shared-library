@@ -25,22 +25,23 @@ def call(Map args) {
         }
 
         // Initialize variables
-        def lintStatus = ""
-        def totalTests = ""
-        def timeTaken = ""
-        def testCoverage = ""
-        def failedCases = ""
+        def lintStatus = "N/A"
+        def totalTests = "N/A"
+        def timeTaken = "N/A"
+        def testCoverage = "N/A"
+        def failedCases = "N/A"
 
-        // Determine if appName is 'api' or 'dotie'
-        def isApiOrDotie = (appName == 'api' || appName == 'dotie')
+        // Parse the email log for Lint Status and other details if appName is "api" or "dotie"
+        def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
+        emailLog.split('\n').each { line ->
+            if (line.startsWith('Lint Status:')) {
+                lintStatus = line.replace('Lint Status:', '').trim()
+            }
+        }
 
-        // Parse the email log only if appName is 'api' or 'dotie'
-        if (isApiOrDotie) {
-            def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
+        if (appName in ['api', 'dotie']) {
             emailLog.split('\n').each { line ->
-                if (line.startsWith('Lint Status:')) {
-                    lintStatus = line.replace('Lint Status:', '').trim()
-                } else if (line.startsWith('Total Tests:')) {
+                if (line.startsWith('Total Tests:')) {
                     totalTests = line.replace('Total Tests:', '').trim()
                 } else if (line.startsWith('Time Taken:')) {
                     timeTaken = line.replace('Time Taken:', '').trim()
@@ -50,12 +51,6 @@ def call(Map args) {
                     failedCases += line + "<br/>"
                 }
             }
-        } else {
-            // Set 'N/A' for specific fields when appName is not 'api' or 'dotie'
-            totalTests = 'N/A'
-            timeTaken = 'N/A'
-            testCoverage = 'N/A'
-            failedCases = 'N/A'
         }
 
         // Define dynamic content for the email
