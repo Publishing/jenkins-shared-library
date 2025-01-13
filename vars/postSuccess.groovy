@@ -24,17 +24,23 @@ def call(Map args) {
             """
         }
 
-        // Default values for testing details
-        def totalTests = "N/A"
-        def timeTaken = "N/A"
-        def testCoverage = "N/A"
-        def failedCases = "N/A"
+        // Initialize variables
+        def lintStatus = ""
+        def totalTests = ""
+        def timeTaken = ""
+        def testCoverage = ""
+        def failedCases = ""
 
-        // Parse the email log if appName is "api" or "dotie"
-        if (appName in ['api', 'dotie']) {
+        // Determine if appName is 'api' or 'dotie'
+        def isApiOrDotie = (appName == 'api' || appName == 'dotie')
+
+        // Parse the email log only if appName is 'api' or 'dotie'
+        if (isApiOrDotie) {
             def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
             emailLog.split('\n').each { line ->
-                if (line.startsWith('Total Tests:')) {
+                if (line.startsWith('Lint Status:')) {
+                    lintStatus = line.replace('Lint Status:', '').trim()
+                } else if (line.startsWith('Total Tests:')) {
                     totalTests = line.replace('Total Tests:', '').trim()
                 } else if (line.startsWith('Time Taken:')) {
                     timeTaken = line.replace('Time Taken:', '').trim()
@@ -44,6 +50,12 @@ def call(Map args) {
                     failedCases += line + "<br/>"
                 }
             }
+        } else {
+            // Set 'N/A' for specific fields when appName is not 'api' or 'dotie'
+            totalTests = 'N/A'
+            timeTaken = 'N/A'
+            testCoverage = 'N/A'
+            failedCases = 'N/A'
         }
 
         // Define dynamic content for the email
