@@ -25,7 +25,6 @@ def call(Map args) {
         }
 
         // Default values for testing details
-        def lintStatus = "N/A"
         def totalTests = "N/A"
         def timeTaken = "N/A"
         def testCoverage = "N/A"
@@ -35,9 +34,7 @@ def call(Map args) {
         if (appName in ['api', 'dotie']) {
             def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
             emailLog.split('\n').each { line ->
-                if (line.startsWith('Lint Status:')) {
-                    lintStatus = line.replace('Lint Status:', '').trim()
-                } else if (line.startsWith('Total Tests:')) {
+                if (line.startsWith('Total Tests:')) {
                     totalTests = line.replace('Total Tests:', '').trim()
                 } else if (line.startsWith('Time Taken:')) {
                     timeTaken = line.replace('Time Taken:', '').trim()
