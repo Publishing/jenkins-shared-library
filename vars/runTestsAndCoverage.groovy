@@ -5,10 +5,17 @@ def call(Map args) {
         def tmpDir = args.tmpDir ?: "/tmp"
         def unitTestSettings = args.unitTestSettings ?: "conf.unit_test_settings"
         def coverageXmlPath = args.coverageXmlPath ?: "coverage.xml"
+        def appName = args.appName
 
         // Validate required parameters
         if (!releaseName) {
             error "releaseName is required but not provided in the configuration."
+        }
+
+        // Conditional check for appName
+        if (appName != 'api' && appName != 'dotie') {
+            echo "Skipping tests and coverage stage as appName '${appName}' is not 'api' or 'dotie'."
+            return
         }
 
         dir(releaseName) {
