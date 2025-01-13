@@ -24,24 +24,19 @@ def call(Map args) {
             """
         }
 
-        // Initialize variables
-        def lintStatus = "N/A"
-        def totalTests = "N/A"
-        def timeTaken = "N/A"
-        def testCoverage = "N/A"
-        def failedCases = "N/A"
-
-        // Parse the email log for Lint Status and other details if appName is "api" or "dotie"
+        // Parse the email log
         def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
-        emailLog.split('\n').each { line ->
-            if (line.startsWith('Lint Status:')) {
-                lintStatus = line.replace('Lint Status:', '').trim()
-            }
-        }
+        def lintStatus = ""
+        def totalTests = ""
+        def timeTaken = ""
+        def testCoverage = ""
+        def failedCases = ""
 
         if (appName in ['api', 'dotie']) {
             emailLog.split('\n').each { line ->
-                if (line.startsWith('Total Tests:')) {
+                if (line.startsWith('Lint Status:')) {
+                    lintStatus = line.replace('Lint Status:', '').trim()
+                } else if (line.startsWith('Total Tests:')) {
                     totalTests = line.replace('Total Tests:', '').trim()
                 } else if (line.startsWith('Time Taken:')) {
                     timeTaken = line.replace('Time Taken:', '').trim()
