@@ -31,8 +31,7 @@ def call(Map args) {
                         """
 
                         // Set SonarQube dashboard URL
-                        def sonarUrl = "${sonarHost}/dashboard?id=${appName}.app"
-                        echo "SonarQube dashboard URL: ${sonarUrl}"
+                        def sonarUrl  = "https://djg-jenkins.rtegroup.ie/sonar/dashboard?id=${appName}.app"
                         env.SONAR_URL = sonarUrl
 
                         // Retrieve the SonarQube quality gate status
