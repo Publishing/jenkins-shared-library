@@ -66,10 +66,12 @@ def call(Map args) {
             <tr style="background-color: lightblue;">
                 <th colspan="2" style="text-align: center;">TESTING DETAILS</th>
             </tr>
+            ${appName in ['api', 'dotie'] ? """
             <tr><th>Total Tests</th><td>${totalTests}</td></tr>
             <tr><th>Time Taken</th><td>${timeTaken}</td></tr>
             <tr><th>Test Coverage</th><td>${testCoverage}</td></tr>
             <tr><th>Failed Cases</th><td>${failedCases}</td></tr>
+            """ : """"}
             <tr><th>SonarQube Status</th><td>${sonarStatus}</td></tr>
             </table>
         """
