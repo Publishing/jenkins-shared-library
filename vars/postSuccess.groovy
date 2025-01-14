@@ -20,7 +20,7 @@ def call(Map args) {
                 "BranchOrTag": "${branchOrTag}",
                 "Deployer": "${deployer}",
                 "JenkinsLogs": "${env.BUILD_URL}"
-            }' "${workflowTriggerUrl}?api-version=2023-11-14-preview" || true
+            }' "${workflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
             """
         }
 
