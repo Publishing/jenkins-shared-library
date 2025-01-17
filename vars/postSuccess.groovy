@@ -10,7 +10,11 @@ def call(Map args) {
         def workflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
 
         // Trigger external workflow if conditions are met
-        if (params.TARGET_SERVER == 'djangopybeta.rtegroup.ie' || params.TARGET_ENVIRONMENT == 'beta') {
+        // Trigger external workflow if conditions are met
+        if (
+            (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
+            (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
+        ) {
             def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
             echo "Triggering external workflow for environment ${params.TARGET_ENVIRONMENT}"
             sh """
@@ -23,6 +27,7 @@ def call(Map args) {
             }' "${workflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
             """
         }
+
 
         // Parse the email log
         def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
