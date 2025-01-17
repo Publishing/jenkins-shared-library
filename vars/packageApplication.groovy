@@ -16,8 +16,6 @@ def call(Map args) {
             // Create tarball and copy to backup directory
             echo "Packaging application..."
             sh "tar -cf ${releaseName}.tar ${releaseName}"
-            echo "Contents of backup directory (${backupDir}):"
-            sh "ls -l ${backupDir}"
 
             sh "cp -p ${releaseName}.tar ${backupDir}"
             echo "Application packaged successfully and stored in ${backupDir}"
