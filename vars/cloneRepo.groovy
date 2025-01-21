@@ -14,24 +14,29 @@ def call(Map args) {
         sh "mkdir -p ${RELEASE_NAME}"
 
         // Navigate to the release directory
-            dir(RELEASE_NAME) {
-        if (params.SELECT_CLONING_OPTION == 'BRANCH') {
-            echo "Cloning repository using branch: ${params.BRANCH}"
-            git branch: params.BRANCH, credentialsId: GIT_CREDENTIALS_ID, url: GIT_REPO_URL
+           dir(RELEASE_NAME) {
+    if (params.SELECT_CLONING_OPTION == 'BRANCH') {
+        echo "Cloning repository using branch: ${params.BRANCH}"
+        git branch: params.BRANCH, credentialsId: GIT_CREDENTIALS_ID, url: GIT_REPO_URL
         } else if (params.SELECT_CLONING_OPTION == 'TAG') {
-            echo "Cloning repository and checking out tag: ${params.TAG}"
-            // Clone the repository using Jenkins `git` step
-            git credentialsId: GIT_CREDENTIALS_ID, url: GIT_REPO_URL
-    
-            // Check out the tag
+        echo "Cloning repository and checking out tag: ${params.TAG}"
+        
+        // Clone the repository using Jenkins `git` step
+        git credentialsId: GIT_CREDENTIALS_ID, url: GIT_REPO_URL
+
+        // Use credentials for `git fetch` and `git checkout` commands
+        withCredentials([usernamePassword(credentialsId: GIT_CREDENTIALS_ID, usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
             sh """
+                git config credential.helper 'store'
+                echo "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com" > ~/.git-credentials
                 git fetch --tags
                 git checkout -b temp-branch ${params.TAG}
             """
-        } else {
-            error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
+                }
+            } else {
+                error "Invalid SELECT_CLONING_OPTION value: ${params.SELECT_CLONING_OPTION}. Must be either 'BRANCH' or 'TAG'."
+            }
         }
-    }
 
         // Return the release name for reference in subsequent stages
         return RELEASE_NAME
