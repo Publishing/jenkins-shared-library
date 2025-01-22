@@ -1,5 +1,9 @@
 def call(Map args) {
        
+       if (params.SELECT_WORK_FLOW == 'UD') {
+        echo "Skipping Lint Code for workflow UD."
+        return
+            }
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
