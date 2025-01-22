@@ -1,5 +1,8 @@
 def call(Map args) {
-
+        if (params.SELECT_WORK_FLOW == 'CI') {
+        echo "Skipping manual approval for workflow UD."
+        return
+    }
         script {
             // Check if the workflow is CI-CD
             if (params.SELECT_WORK_FLOW == 'CI-CD') {
