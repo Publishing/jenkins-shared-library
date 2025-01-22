@@ -23,8 +23,6 @@ def call(Map args) {
 
             sh "cp -p ${releaseName}.tar ${backupDir}"
             echo "Application packaged successfully and stored in ${backupDir}"
-        } else {
-            echo "Package Application stage skipped as workflow is not CI-CD."
-        }
+        } 
     }
 
