@@ -5,8 +5,7 @@ def call(Map args) {
         return
     }
     script {
-        // Check if the workflow is CI-CD
-        if (params.SELECT_WORK_FLOW == 'CI-CD') {
+       
             // Define variables from args
             def releaseName = args.releaseName
             def backupDir = args.backupDir
@@ -28,4 +27,4 @@ def call(Map args) {
             echo "Package Application stage skipped as workflow is not CI-CD."
         }
     }
-}
+
