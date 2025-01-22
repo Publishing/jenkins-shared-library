@@ -1,4 +1,9 @@
 def call(Map args) {
+
+    if (params.SELECT_WORK_FLOW in ['CI', 'CI-CD']) {
+    echo "Skipping urgent approval for workflow ${params.SELECT_WORK_FLOW}"
+    return
+    }    
     // Define the approver's Jenkins ID
     def approverID = 'abhishek'
 
