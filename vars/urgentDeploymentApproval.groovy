@@ -1,9 +1,5 @@
 def call(Map args) {
 
-    if (params.SELECT_WORK_FLOW in ['CI', 'CI-CD']) {
-    echo "Skipping urgent approval for workflow ${params.SELECT_WORK_FLOW}"
-    return
-    }    
     // Define the approver's Jenkins ID
     def approverID = 'abhishek'
 
@@ -12,11 +8,11 @@ def call(Map args) {
     def approverEmail = approverUser?.getProperty(hudson.tasks.Mailer.UserProperty)?.getAddress()
 
     if (!approverEmail) {
-        error "No email address found for Jenkins user ID: ${approverID}"
+        error("No email address found for Jenkins user ID: ${approverID}")
     }
 
-    def consoleUrl = args.consoleUrl ?: error "consoleUrl is required."
-    def currentBuild = args.currentBuild ?: error "currentBuild is required."
+    def consoleUrl = args.consoleUrl ?: error("consoleUrl is required.")
+    def currentBuild = args.currentBuild ?: error("currentBuild is required.")
 
     // Send an email notification to the approver
     mail to: approverEmail,
