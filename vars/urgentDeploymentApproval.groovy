@@ -1,11 +1,9 @@
-def call(Map args) {
-
+def call(Map args = [:]) {
     // Define the approver's Jenkins ID
     def approverID = 'abhishek'
 
-    // Fetch the email associated with the Jenkins ID
-    def approverUser = Jenkins.instance.getUser(approverID)
-    def approverEmail = approverUser?.getProperty(hudson.tasks.Mailer.UserProperty)?.getAddress()
+    // Fetch the email associated with the Jenkins ID directly
+    def approverEmail = Jenkins.instance.getUser(approverID)?.getProperty(hudson.tasks.Mailer.UserProperty)?.getAddress()
 
     if (!approverEmail) {
         error("No email address found for Jenkins user ID: ${approverID}")
