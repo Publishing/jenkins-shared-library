@@ -1,5 +1,9 @@
 def call(Map args) {
-        
+
+        if (params.SELECT_WORK_FLOW == 'CI') {
+        echo "Skipping deployment stage for workflow UD."
+        return
+    }
             script {
                 // Define variables from args
                 def releaseName = args.releaseName
