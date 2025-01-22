@@ -1,7 +1,7 @@
 def call(Map args) {
 
     if (params.SELECT_WORK_FLOW == 'UD') {
-        echo "Skipping Lint Code for workflow UD."
+        echo "Skipping unit tests for workflow UD."
         return
     }
     script {
