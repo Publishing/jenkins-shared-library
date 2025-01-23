@@ -1,9 +1,10 @@
 def call(Map args = [:]) {
 
     if (params.SELECT_WORK_FLOW in ['CI', 'CI-CD']) {
-    echo "Skipping manual approval for workflow ${params.SELECT_WORK_FLOW}."
-    return
+        echo "Skipping manual approval for workflow ${params.SELECT_WORK_FLOW}."
+        return
     }
+
     // Define the approver's Jenkins ID
     def approverID = 'abhishek'
 
@@ -45,8 +46,15 @@ def call(Map args = [:]) {
          mimeType: 'text/html'
 
     // Request approval from the approver
-    input message: "Do you want to proceed with the deployment?",
-          ok: "Approve",
-          submitter: approverID,  // Dynamically set the approver Jenkins ID
-          submitterParameter: 'approver'  // Capture who approved
+    def approver = input message: "Do you want to proceed with the deployment?",
+                  ok: "Approve",
+                  submitter: approverID,  // Dynamically set the approver Jenkins ID
+                  submitterParameter: 'approver'  // Capture who approved
+
+    // Verify the actual approver
+    if (approver != approverID) {
+        error("Unauthorized approval detected. Only ${approverID} can approve this step.")
+    }
+
+    echo "Approval granted by: ${approver}"
 }
