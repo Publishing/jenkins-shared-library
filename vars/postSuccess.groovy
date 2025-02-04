@@ -9,7 +9,7 @@ def call(Map args) {
         def sonarUrl = args.sonarUrl ?: env.SONAR_URL
         def sonarStatus = args.sonarStatus ?: "Unknown"
         def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
-
+        def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
         // Define workflow URLs
         def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM"
         def teamsNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
@@ -20,7 +20,7 @@ def call(Map args) {
                 (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
                 (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
             ) {
-                def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
+                
                 echo "Triggering external deployment workflow for environment: ${params.TARGET_ENVIRONMENT}"
         
                 // Trigger the external workflow (Deployment)
