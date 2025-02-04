@@ -33,20 +33,45 @@ def call(Map args) {
                 def jenkinsBaseUrl = "https://djg-jenkins.rtegroup.ie/job/Testing/job/Pipelines/job"
                 def apiToken = "111873919e378af63c1f145faf448f8e6e"
                 def jenkinsUser = "abhishek"
-        
+                
+                // Define the Power Automate workflow trigger URL
+                def workflowTriggerUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
+                
                 // List of Jenkins pipelines to trigger
                 def pipelines = ["dotie_all_pages_245", "RTEAPIEndpointsTests", "RTEAPISportsPageTests", "RTEUIHomePageTests"]
-        
+                
+                // Initialize an empty list to store pipeline monitoring URLs
+                def monitoringData = []
+                
                 // Trigger all pipelines
                 pipelines.each { pipelineName ->
                     echo "Triggering pipeline: ${pipelineName}"
+                    
                     sh """
                     CRUMB=\$(curl -k -s -u ${jenkinsUser}:${apiToken} 'https://djg-jenkins.rtegroup.ie/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
                     curl -k -s -u ${jenkinsUser}:${apiToken} -X POST -H "\$CRUMB" \
                     "${jenkinsBaseUrl}/${pipelineName}/buildWithParameters" \
                     --data-urlencode "UI_Test_Environment=prod"
                     """
+                
+                    // Construct Monitoring URL
+                    def monitoringUrl = "${jenkinsBaseUrl}/${pipelineName}/lastBuild/console"
+                
+                    // Store pipeline name and monitoring URL in the list
+                    monitoringData << [
+                        "pipeline_name": pipelineName,
+                        "monitoring_url": monitoringUrl
+                    ]
                 }
+                
+                // Convert the monitoring data to JSON format
+                def jsonData = JsonOutput.toJson(monitoringData)
+                
+                // Send all pipeline statuses in a single request
+                echo "Sending workflow trigger with all pipeline monitoring URLs"
+                sh """
+                curl -X POST -H "Content-Type: application/json" -d '${jsonData}' '${workflowTriggerUrl}'
+                """
             }
         }
 
