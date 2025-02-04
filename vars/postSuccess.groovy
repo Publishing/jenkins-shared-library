@@ -1,3 +1,5 @@
+import groovy.json.JsonOutput
+
 def call(Map args) {
     try {
         // Extract required arguments or use defaults
@@ -7,18 +9,21 @@ def call(Map args) {
         def sonarUrl = args.sonarUrl ?: env.SONAR_URL
         def sonarStatus = args.sonarStatus ?: "Unknown"
         def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
-        def workflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
 
-        // Trigger external workflow only for CI-CD or UD workflows and also trigger Automations tests
+        // Define workflow URLs
+        def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
+        def teamsNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
+
+        // Trigger external workflow only for CI-CD or UD workflows
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
             if (
                 (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
                 (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
             ) {
                 def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
-                echo "Triggering external workflow for environment ${params.TARGET_ENVIRONMENT}"
+                echo "Triggering external deployment workflow for environment: ${params.TARGET_ENVIRONMENT}"
         
-                // Trigger the external workflow
+                // Trigger the external workflow (Deployment)
                 sh """
                 curl -X POST -H "Content-Type: application/json" -d '{
                     "Environment": "${params.TARGET_ENVIRONMENT}",
@@ -26,30 +31,51 @@ def call(Map args) {
                     "BranchOrTag": "${branchOrTag}",
                     "Deployer": "${deployer}",
                     "JenkinsLogs": "${env.BUILD_URL}"
-                }' "${workflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
+                }' '${deploymentWorkflowTriggerUrl}' || true
                 """
-        
+
                 // Define Jenkins base URL and credentials
                 def jenkinsBaseUrl = "https://djg-jenkins.rtegroup.ie/job/Testing/job/Pipelines/job"
                 def apiToken = "111873919e378af63c1f145faf448f8e6e"
                 def jenkinsUser = "abhishek"
-        
+
                 // List of Jenkins pipelines to trigger
                 def pipelines = ["dotie_all_pages_245", "RTEAPIEndpointsTests", "RTEAPISportsPageTests", "RTEUIHomePageTests"]
-        
+
+                // Initialize an empty list to store pipeline monitoring URLs
+                def monitoringData = []
+
                 // Trigger all pipelines
                 pipelines.each { pipelineName ->
                     echo "Triggering pipeline: ${pipelineName}"
+                    
                     sh """
                     CRUMB=\$(curl -k -s -u ${jenkinsUser}:${apiToken} 'https://djg-jenkins.rtegroup.ie/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
                     curl -k -s -u ${jenkinsUser}:${apiToken} -X POST -H "\$CRUMB" \
                     "${jenkinsBaseUrl}/${pipelineName}/buildWithParameters" \
                     --data-urlencode "UI_Test_Environment=prod"
                     """
+                
+                    // Construct Monitoring URL
+                    def monitoringUrl = "${jenkinsBaseUrl}/${pipelineName}/lastBuild/console"
+                
+                    // Store pipeline name and monitoring URL in the list
+                    monitoringData << [
+                        "pipeline_name": pipelineName,
+                        "monitoring_url": monitoringUrl
+                    ]
                 }
+                
+                // Convert monitoring data to JSON format & escape quotes
+                def jsonData = JsonOutput.toJson(monitoringData).replace('"', '\\"')
+                
+                // Send all pipeline statuses to Power Automate for Teams notification
+                echo "Sending workflow trigger with all pipeline monitoring URLs"
+                sh """
+                curl -X POST -H "Content-Type: application/json" -d \"${jsonData}\" '${teamsNotificationWorkflowUrl}'
+                """
             }
         }
-
 
         // Parse the email log
         def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
@@ -82,7 +108,7 @@ def call(Map args) {
             <tr><th>Server</th><td>${params.TARGET_SERVER}</td></tr>
             <tr><th>Settings File</th><td>${params.SETTINGS_FILE}</td></tr>
             <tr><th>Application</th><td>${appName}</td></tr>
-            <tr><th>Branch/Commit/Tag</th><td>${params.SELECT_CLONING_OPTION == 'TAG' ? params.TAG : params.BRANCH}</td></tr>
+            <tr><th>Branch/Commit/Tag</th><td>${branchOrTag}</td></tr>
             <tr><th>Deployer</th><td>${deployer}</td></tr>
             <tr><th>Status</th><td>Successful</td></tr>
             </table>
