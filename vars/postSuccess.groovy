@@ -11,7 +11,7 @@ def call(Map args) {
         def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
         def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
         // Define workflow URLs
-        def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM"
+        def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
         def teamsNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
 
         // Trigger external workflow only for CI-CD or UD workflows
@@ -31,7 +31,7 @@ def call(Map args) {
                     "BranchOrTag": "${branchOrTag}",
                     "Deployer": "${deployer}",
                     "JenkinsLogs": "${env.BUILD_URL}"
-                }' '${deploymentWorkflowTriggerUrl}' || true
+                }' "${deploymentWorkflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
                 """
 
                 // Define Jenkins base URL and credentials
@@ -56,14 +56,7 @@ def call(Map args) {
                     --data-urlencode "UI_Test_Environment=prod"
                     """
                 
-                    // Construct Monitoring URL
-                    def monitoringUrl = "${jenkinsBaseUrl}/${pipelineName}/lastBuild/console"
-                
-                    // Store pipeline name and monitoring URL in the list
-                    monitoringData << [
-                        "pipeline_name": pipelineName,
-                        "monitoring_url": monitoringUrl
-                    ]
+                    
                 }
                 
                 // Convert monitoring data to JSON format & escape quotes
@@ -72,7 +65,7 @@ def call(Map args) {
                 // Send all pipeline statuses to Power Automate for Teams notification
                 echo "Sending workflow trigger with all pipeline monitoring URLs"
                 sh """
-                curl -X POST -H "Content-Type: application/json" -d \"${jsonData}\" '${teamsNotificationWorkflowUrl}'
+                curl -X POST '${teamsNotificationWorkflowUrl}'
                 """
             }
         }
