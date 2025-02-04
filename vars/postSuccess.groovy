@@ -9,7 +9,7 @@ def call(Map args) {
         def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
         def workflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
 
-        // Trigger external workflow only for CI-CD or UD workflows
+        // Trigger external workflow only for CI-CD or UD workflows and also trigger Automations tests
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
             if (
                 (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
@@ -17,6 +17,8 @@ def call(Map args) {
             ) {
                 def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
                 echo "Triggering external workflow for environment ${params.TARGET_ENVIRONMENT}"
+        
+                // Trigger the external workflow
                 sh """
                 curl -X POST -H "Content-Type: application/json" -d '{
                     "Environment": "${params.TARGET_ENVIRONMENT}",
@@ -26,8 +28,28 @@ def call(Map args) {
                     "JenkinsLogs": "${env.BUILD_URL}"
                 }' "${workflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
                 """
+        
+                // Define Jenkins base URL and credentials
+                def jenkinsBaseUrl = "https://djg-jenkins.rtegroup.ie/job/Testing/job/Pipelines/job"
+                def apiToken = "111873919e378af63c1f145faf448f8e6e"
+                def jenkinsUser = "abhishek"
+        
+                // List of Jenkins pipelines to trigger
+                def pipelines = ["dotie_all_pages_245", "RTEAPIEndpointsTests", "RTEAPISportsPageTests", "RTEUIHomePageTests"]
+        
+                // Trigger all pipelines
+                pipelines.each { pipelineName ->
+                    echo "Triggering pipeline: ${pipelineName}"
+                    sh """
+                    CRUMB=\$(curl -k -s -u ${jenkinsUser}:${apiToken} 'https://djg-jenkins.rtegroup.ie/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
+                    curl -k -s -u ${jenkinsUser}:${apiToken} -X POST -H "\$CRUMB" \
+                    "${jenkinsBaseUrl}/${pipelineName}/buildWithParameters" \
+                    --data-urlencode "UI_Test_Environment=prod"
+                    """
+                }
             }
         }
+
 
         // Parse the email log
         def emailLog = sh(script: "${tmpDir}/parse_log.sh", returnStdout: true).trim()
