@@ -57,7 +57,13 @@ def call(Map args) {
 def deployToTarget(target, releaseName, targetServerUser, targetDir, deployScriptPath, dbScriptPath, htmlReportPath, deploymentLogs, appName) {
     sh "scp ${releaseName}.tar ${targetServerUser}@${target}:${targetDir}"
     sh "sh ${deployScriptPath} ${releaseName} ${targetServerUser} ${target} ${targetDir} ${params.SETTINGS_FILE} ${deploymentLogs} ${appName} ${params.TARGET_ENVIRONMENT} ${params.CACHEBUST}"
-    sh "sh ${dbScriptPath} ${params.BRANCH} ${params.DEPLOYER} ${currentBuild.currentResult} ${target} ${params.SETTINGS_FILE} ${appName} ${env.BUILD_URL} ${env.APPROVER} ${env.BUILD_NUMBER}"
+    
+    if (params.SELECT_CLONING_OPTION == 'BRANCH') {
+        sh "sh ${dbScriptPath} ${params.BRANCH} ${params.DEPLOYER} ${currentBuild.currentResult} ${target} ${params.SETTINGS_FILE} ${appName} ${env.BUILD_URL} ${env.APPROVER} ${env.BUILD_NUMBER}"
+    } else if (params.SELECT_CLONING_OPTION == 'TAG') {
+        sh "sh ${dbScriptPath} ${params.TAG} ${params.DEPLOYER} ${currentBuild.currentResult} ${target} ${params.SETTINGS_FILE} ${appName} ${env.BUILD_URL} ${env.APPROVER} ${env.BUILD_NUMBER}"
+    }
+    
     sh "python ${htmlReportPath}"
     sh "scp ${targetServerUser}@${target}:${deploymentLogs}/${appName} ${appName}_target_log"
     sh "cat ${appName}_target_log"
