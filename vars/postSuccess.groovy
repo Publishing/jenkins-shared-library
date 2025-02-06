@@ -133,11 +133,19 @@ def call(Map args) {
             emailBody += "<p>URGENT DEPLOYMENT!</p><p>${deploymentDetails}</p>"
         }
 
-        emailBody += """
-        <p>SonarQube Dashboard: <a href="${sonarUrl}">Sonar Dashboard</a></p>
-        <p>Jenkins Logs: <a href="${env.BUILD_URL}">Jenkins Logs</a></p>
-        </body></html>
-        """
+        if (params.SELECT_WORK_FLOW == 'UD') {
+            emailBody += """
+                <p>Jenkins Logs: <a href="${env.BUILD_URL}">Jenkins Logs</a></p>
+                </body></html>
+                """
+        } else {
+            emailBody += """
+                <p>SonarQube Dashboard: <a href="${sonarUrl}">Sonar Dashboard</a></p>
+                <p>Jenkins Logs: <a href="${env.BUILD_URL}">Jenkins Logs</a></p>
+                </body></html>
+                """
+        }
+
 
         def subjectLine = "Build ${currentBuild.fullDisplayName} succeeded"
 
