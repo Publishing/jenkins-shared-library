@@ -1,11 +1,11 @@
 def call(Map args) {
         if (params.SELECT_WORK_FLOW == 'CI') {
-        echo "Skipping manual approval for workflow UD."
+        echo "Skipping manual approval for workflow CI"
         return
     }
         script {
             // Check if the workflow is CI-CD
-            if (params.SELECT_WORK_FLOW == 'CI-CD') {
+            if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
                 // Define optional variables from args
                 def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
                 def inputOkLabel = args.inputOkLabel ?: "Deploy"
