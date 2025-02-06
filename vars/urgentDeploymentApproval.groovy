@@ -1,6 +1,6 @@
 def call(Map args = [:]) {
 
-    if (params.SELECT_WORK_FLOW in ['CI', 'CI-CD']) {
+    if (params.SELECT_WORK_FLOW in ['CI', 'CI-CD', 'UD']) {
         echo "Skipping manual approval for workflow ${params.SELECT_WORK_FLOW}."
         return
     }
