@@ -8,7 +8,7 @@ def call(Map args) {
         def deployer = args.deployer ?: params.DEPLOYER
         def sonarUrl = args.sonarUrl ?: env.SONAR_URL
         def sonarStatus = args.sonarStatus ?: "Unknown"
-        def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
+        def emailRecipients = args.emailRecipients ?: params.DEPLOYER
         def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
         // Define workflow URLs
         def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
