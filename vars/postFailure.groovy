@@ -2,7 +2,7 @@ def call(Map args) {
     try {
         // Extract required arguments or use defaults
         def buildUrl = args.BUILD_URL ?: env.BUILD_URL
-        def emailRecipients = args.emailRecipients ?: 'abhishek.tiwari@rte.ie'
+        def emailRecipients = args.emailRecipients ?: params.DEPLOYER
         def errorMessage = args.errorMessage ?: "Unknown Error"
 
         // Construct the email body
