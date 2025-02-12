@@ -30,7 +30,7 @@ def call(Map args) {
                             "BranchOrTag": "${branchOrTag}",
                             "Deployer": "${params.DEPLOYER}",
                             "JenkinsLogs": "${env.BUILD_URL}"
-                        }' "${deploymentWorkflowTriggerUrl}" || true
+                        }' "${triggerUrl}" || true
                         """
                     }
                 }
