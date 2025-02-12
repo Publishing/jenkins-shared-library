@@ -14,7 +14,7 @@ def call(Map args) {
                 def udWorkflowTriggerUrl = "https://prod-74.westeurope.logic.azure.com:443/workflows/5f19d988580e45d38016d4231e957164/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zi8h07d_txYVm6O6bDucST9dQ4PcczzXV-K_F9FN2Mc"
 
                 if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
-                def triggerUrl = params.SELECT_WORK_FLOW == 'CI-CD' ? deploymentWorkflowTriggerUrl : UDWorkflowTriggerUrl
+                def triggerUrl = params.SELECT_WORK_FLOW == 'CI-CD' ? deploymentWorkflowTriggerUrl : udWorkflowTriggerUrl
 
                     if (
                         (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
