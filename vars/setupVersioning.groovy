@@ -14,8 +14,8 @@ def call(Map args) {
 
                 if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
                     if (
-                        (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
-                        (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
+                        (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopytest.rtegroup.ie') || 
+                        (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'test')
                     ) {
                         echo "Triggering external deployment workflow for environment: ${params.TARGET_ENVIRONMENT}"
                 
