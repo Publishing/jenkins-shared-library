@@ -11,11 +11,14 @@ def call(Map args) {
         def emailRecipients = args.emailRecipients ?: params.DEPLOYER
         def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
         // Define workflow URLs
-        def deploymentWorkflowTriggerUrl = args.workflowTriggerUrl ?: "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke"
-        def teamsNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
+        def deploymentWorkflowTriggerUrl = "https://prod-230.westeurope.logic.azure.com:443/workflows/9a393f61a96145c7acf7f906e7e2151b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM"
+        def udWorkflowTriggerUrl = "https://prod-96.westeurope.logic.azure.com:443/workflows/5eb03b72dde44648aab564d9754309f2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=urdJ4vOyPLzcUK5Cxnv5OHVwxsb_IL2JujbDDacGIV0"
+        def testNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
+
 
         // Trigger external workflow only for CI-CD or UD workflows
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
+            def triggerUrl = params.SELECT_WORK_FLOW == 'CI-CD' ? deploymentWorkflowTriggerUrl : udWorkflowTriggerUrl
             if (
                 (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
                 (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
@@ -31,7 +34,7 @@ def call(Map args) {
                     "BranchOrTag": "${branchOrTag}",
                     "Deployer": "${deployer}",
                     "JenkinsLogs": "${env.BUILD_URL}"
-                }' "${deploymentWorkflowTriggerUrl}?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MMVGSEtXit1LArXuRD2LV3slgsv31K49ORRaOTkBCGM" || true
+                }' "${triggerUrl}" || true
                 """
 
                 // Define Jenkins base URL and credentials
@@ -65,7 +68,7 @@ def call(Map args) {
                 // Send all pipeline statuses to Power Automate for Teams notification
                 echo "Sending workflow trigger with all pipeline monitoring URLs"
                 sh """
-                curl -X POST '${teamsNotificationWorkflowUrl}'
+                curl -X POST '${testNotificationWorkflowUrl}'
                 """
             }
         }
