@@ -10,7 +10,7 @@ def call(Map args) {
                 def currentVersion = sh(script: "if [ -f ${versionFile} ]; then cat ${versionFile}; else echo 'V1.0.0'; fi", returnStdout: true).trim()
                 def (major, minor, patch) = currentVersion.replaceAll("V", "").tokenize('.')
                 def newPatch = patch.toInteger() + 1
-                def teamsNotificationWorkflowUrl = "https://prod-03.westeurope.logic.azure.com:443/workflows/00bd6ccdd7294f05b7976ce4ab486184/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZIlo779OiLoT4AYlsf9D04qxVmXfAyLU_mCgG3FEudg"
+                def deploymentWorkflowTriggerUrl = "https://prod-03.westeurope.logic.azure.com:443/workflows/00bd6ccdd7294f05b7976ce4ab486184/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZIlo779OiLoT4AYlsf9D04qxVmXfAyLU_mCgG3FEudg"
 
                 if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
                     if (
