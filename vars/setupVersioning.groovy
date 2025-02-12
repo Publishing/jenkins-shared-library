@@ -25,7 +25,7 @@ def call(Map args) {
                             "Environment": "${params.TARGET_ENVIRONMENT}",
                             "Application": "${appName}",
                             "BranchOrTag": "${branchOrTag}",
-                            "Deployer": "${PARAMS.DEPLOYER}",
+                            "Deployer": "${params.DEPLOYER}",
                             "JenkinsLogs": "${env.BUILD_URL}"
                         }' "${deploymentWorkflowTriggerUrl}" || true
                         """
