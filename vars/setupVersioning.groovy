@@ -11,8 +11,11 @@ def call(Map args) {
                 def (major, minor, patch) = currentVersion.replaceAll("V", "").tokenize('.')
                 def newPatch = patch.toInteger() + 1
                 def deploymentWorkflowTriggerUrl = "https://prod-03.westeurope.logic.azure.com:443/workflows/00bd6ccdd7294f05b7976ce4ab486184/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZIlo779OiLoT4AYlsf9D04qxVmXfAyLU_mCgG3FEudg"
+                def UDWorkflowTriggerUrl = "https://prod-74.westeurope.logic.azure.com:443/workflows/5f19d988580e45d38016d4231e957164/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zi8h07d_txYVm6O6bDucST9dQ4PcczzXV-K_F9FN2Mc"
 
                 if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
+                def triggerUrl = params.SELECT_WORK_FLOW == 'CI-CD' ? deploymentWorkflowTriggerUrl : UDWorkflowTriggerUrl
+
                     if (
                         (params.SELECT_TARGET_OPTION == 'SERVER' && params.TARGET_SERVER == 'djangopybeta.rtegroup.ie') || 
                         (params.SELECT_TARGET_OPTION == 'ENVIRONMENT' && params.TARGET_ENVIRONMENT == 'beta')
