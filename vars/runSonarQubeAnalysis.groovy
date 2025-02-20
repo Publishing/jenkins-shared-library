@@ -23,7 +23,6 @@ def call(Map args) {
                 // Use Jenkins SonarQube Integration
                 withSonarQubeEnv('sonarqube') { // Name should match the configured SonarQube server in Jenkins
                     sh """
-                    export SONAR_SCANNER_OPTS="-Djavax.net.ssl.trustStoreType=JKS -Dsonar.scanAllFiles=true -Dsonar.ws.disableCertificateValidation=true"
                     sonar-scanner \
                     -Dsonar.projectKey=${appName}.app \
                     -Dsonar.sources=. \
