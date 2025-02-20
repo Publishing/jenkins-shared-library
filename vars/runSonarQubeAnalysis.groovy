@@ -32,7 +32,7 @@ def call(Map args) {
                 }
 
                 // Define SonarQube URL dynamically
-                def sonarUrl = "${SONAR_HOST_URL}/dashboard?id=${appName}.app"
+                def sonarUrl = "${env.SONAR_HOST_URL}/dashboard?id=${appName}.app"
                 env.SONAR_URL = sonarUrl
 
                 // Wait for SonarQube Quality Gate Result
