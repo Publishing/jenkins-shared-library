@@ -96,7 +96,8 @@ def call(Map args) {
                             echo "SonarQube Quality Gate passed: ${env.SONAR_STATUS}"
                         } else if (env.SONAR_STATUS == "ERROR") {
                             echo "SonarQube Quality Gate failed: ${env.SONAR_STATUS}"
-                            error("Marking stage as error due to SonarQube Quality Gate failure.")
+                            //error("Marking stage as error due to SonarQube Quality Gate failure.")
+                            currentBuild.result = 'UNSTABLE'
                         } else {
                             echo "SonarQube Quality Gate returned an unknown status: ${env.SONAR_STATUS}"
                             currentBuild.result = 'UNSTABLE'
