@@ -36,7 +36,7 @@ def call(Map args) {
                 env.SONAR_URL = sonarUrl
 
                 // Wait for SonarQube Quality Gate Result
-                timeout(time: 3, unit: 'MINUTES') { // Adjust timeout based on project size
+                timeout(time: 10, unit: 'MINUTES') { // Adjust timeout based on project size
                     def qg = waitForQualityGate()
                     if (qg.status == 'OK') {
                         echo "SonarQube Quality Gate PASSED: ${qg.status}"
