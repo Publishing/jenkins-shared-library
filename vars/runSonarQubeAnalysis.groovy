@@ -45,18 +45,17 @@ def call(Map args) {
                         def qg = waitForQualityGate()
                         // If we reach here, the plugin succeeded
                         gotQGfromJenkins = true
+                        env.SONAR_STATUS = qg.status
 
                         if (qg.status == 'OK') {
                             echo "SonarQube Quality Gate PASSED: ${qg.status}"
-                            env.SONAR_STATUS = "OK"
                         } else if (qg.status == 'ERROR') {
                             echo "SonarQube Quality Gate FAILED: ${qg.status}"
-                            env.SONAR_STATUS = "ERROR"
-                            //error("Build failed due to SonarQube Quality Gate failure.")
-                            currentBuild.result = 'UNSTABLE'
+                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                error("SonarQube Quality Gate failure. Marking stage as FAILED but build as UNSTABLE.")
+                            }
                         } else {
                             echo "SonarQube Quality Gate returned UNKNOWN status: ${qg.status}"
-                            env.SONAR_STATUS = qg.status
                             currentBuild.result = 'UNSTABLE'
                         }
                     }
@@ -96,8 +95,9 @@ def call(Map args) {
                             echo "SonarQube Quality Gate passed: ${env.SONAR_STATUS}"
                         } else if (env.SONAR_STATUS == "ERROR") {
                             echo "SonarQube Quality Gate failed: ${env.SONAR_STATUS}"
-                            //error("Marking stage as error due to SonarQube Quality Gate failure.")
-                            currentBuild.result = 'UNSTABLE'
+                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                                error("SonarQube Quality Gate failure. Marking stage as FAILED but build as UNSTABLE.")
+                            }
                         } else {
                             echo "SonarQube Quality Gate returned an unknown status: ${env.SONAR_STATUS}"
                             currentBuild.result = 'UNSTABLE'
