@@ -37,7 +37,7 @@ def call(Map args) {
                 // Keep track if we successfully got QG from Jenkins
                 boolean gotQGfromJenkins = false
                 env.SONAR_STATUS = ''  // Initialize
-                env.SONAR_URL = "${sonarHost}/api/qualitygates/project_status?projectKey=${appName}.app"
+                env.SONAR_URL = "${sonarHost}/dashboard?id=${appName}.app"
 
                 // 2) Attempt short waitForQualityGate (10 seconds)
                 try {
