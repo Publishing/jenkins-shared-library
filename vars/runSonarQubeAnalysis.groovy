@@ -112,3 +112,4 @@ def call(Map args) {
     echo "Continuing pipeline execution despite SonarQube failure."
     }
 }
+}
