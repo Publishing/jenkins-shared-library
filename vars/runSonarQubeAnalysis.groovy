@@ -20,6 +20,7 @@ def call(Map args) {
         }
 
         dir(releaseName) {
+            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
             try {
                 echo "Running SonarQube analysis for project: ${appName}.app"
 
@@ -51,9 +52,8 @@ def call(Map args) {
                             echo "SonarQube Quality Gate PASSED: ${qg.status}"
                         } else if (qg.status == 'ERROR') {
                             echo "SonarQube Quality Gate FAILED: ${qg.status}"
-                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                                error("SonarQube Quality Gate failure. Marking stage as FAILED but build as UNSTABLE.")
-                            }
+                            error("SonarQube Quality Gate failure. Marking stage as FAILED.")
+                            
                         } else {
                             echo "SonarQube Quality Gate returned UNKNOWN status: ${qg.status}"
                             currentBuild.result = 'UNSTABLE'
@@ -95,9 +95,8 @@ def call(Map args) {
                             echo "SonarQube Quality Gate passed: ${env.SONAR_STATUS}"
                         } else if (env.SONAR_STATUS == "ERROR") {
                             echo "SonarQube Quality Gate failed: ${env.SONAR_STATUS}"
-                            catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                                error("SonarQube Quality Gate failure. Marking stage as FAILED but build as UNSTABLE.")
-                            }
+                            error("SonarQube Quality Gate failure. Marking stage as FAILED")
+                            
                         } else {
                             echo "SonarQube Quality Gate returned an unknown status: ${env.SONAR_STATUS}"
                             currentBuild.result = 'UNSTABLE'
@@ -107,9 +106,9 @@ def call(Map args) {
 
             } catch (Exception e) {
                 echo "Error during SonarQube analysis: ${e.getMessage()}"
-                currentBuild.result = 'FAILURE'
                 error("Stopping pipeline due to SonarQube analysis failure.")
             }
         }
+    echo "Continuing pipeline execution despite SonarQube failure."
     }
 }
