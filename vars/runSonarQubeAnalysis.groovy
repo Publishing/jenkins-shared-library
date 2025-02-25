@@ -42,7 +42,7 @@ def call(Map args) {
 
                 // 2) Attempt short waitForQualityGate (10 seconds)
                 try {
-                    timeout(time: 10, unit: 'SECONDS') {
+                    timeout(time: 3, unit: 'SECONDS') {
                         def qg = waitForQualityGate()
                         // If we reach here, the plugin succeeded
                         gotQGfromJenkins = true
