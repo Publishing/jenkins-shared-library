@@ -1,40 +1,34 @@
 def call(Map args) {
     if (params.SELECT_WORK_FLOW == 'CI') {
-        echo "Skipping manual approval for workflow CI"
+        echo "Skipping manual approval for workflow CI."
         return
     }
 
     script {
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
-            def appName = args.appName 
-            def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
-            def submitterParameter = args.submitterParameter ?: 'approver'
+            def inputMessage = args.inputMessage ?: "Do you want to proceed with deployment?"
+            def inputOkLabel = "Deploy"   // ✅ Creates the "Deploy" button
+            def inputAbortLabel = "Abort" // ✅ Creates the "Abort" button
+            def reminderCounter = 0  
 
             echo "Awaiting manual approval..."
 
-            def jenkinsApprovalLink = "https://djg-jenkins.rtegroup.ie/job/CI-CD/job/${appName}" // Approval link
-
-            def approvalRequest = null
-            def reminderCounter = 0  
-            def approverUsername = null
-
             try {
                 timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
-                    approvalRequest = input(
+                    def approval = input(
                         message: inputMessage,
                         parameters: [
                             choice(name: 'Approval', choices: ['Deploy', 'Abort'], description: "Select 'Deploy' to continue or 'Abort' to cancel")
                         ]
                     )
 
-                    if (approvalRequest == 'Abort') { // 🚨 Handle "Abort" button click
+                    if (approval == 'Abort') { // 🚨 Handle "Abort" button click
                         echo "🚨 Deployment aborted by user. Skipping remaining pipeline stages."
                         currentBuild.result = 'ABORTED' // ✅ Marks build as "Aborted" (skips next stages)
                         error("Pipeline aborted manually.") // ✅ Stops execution
                     }
 
-                    approverUsername = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.getUserId()
-                    echo "✅ Deployment approved by: ${approverUsername}"
+                    echo "✅ Deployment approved. Proceeding with deployment..."
                 }
             } catch (hudson.AbortException e) { 
                 echo "🚨 Deployment manually aborted."
@@ -56,12 +50,11 @@ def call(Map args) {
                                 <p>The deployment request is still awaiting approval.</p>
                                 <ul>
                                     <li><b>Workflow:</b> ${params.SELECT_WORK_FLOW}</li>
-                                    <li><b>APP:</b> ${appName}</li>
                                     <li><b>Deployer:</b> ${params.DEPLOYER}</li>
                                 </ul>
                                 <p>Please review and approve the request at your earliest convenience.</p>
                                 <p>
-                                    <a href="${jenkinsApprovalLink}" style="background-color:#008CBA;color:white;padding:12px 20px;text-decoration:none;font-size:16px;border-radius:5px;display:inline-block;">
+                                    <a href="${env.BUILD_URL}" style="background-color:#008CBA;color:white;padding:12px 20px;text-decoration:none;font-size:16px;border-radius:5px;display:inline-block;">
                                         ✅ Approve Request
                                     </a>
                                 </p>
@@ -83,7 +76,7 @@ def call(Map args) {
                 }
             }
 
-            echo "Approval granted: ${approvalRequest}"
+            echo "✅ Approval granted. Proceeding..."
         } else {
             echo "ℹ️ Manual approval not required for workflow: ${params.SELECT_WORK_FLOW}"
         }
