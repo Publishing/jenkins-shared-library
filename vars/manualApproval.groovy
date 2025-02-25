@@ -16,11 +16,11 @@ def call(Map args) {
             def jenkinsApprovalLink = "https://djg-jenkins.rtegroup.ie/job/CI-CD/job/${appName}" // Approval link
 
             def approvalRequest = null
-            def reminderCounter = 0  // Counter to track attempts
+            def reminderCounter = 0  // Tracks failed approval attempts
 
             while (!approvalRequest) {
                 try {
-                    timeout(time: 1, unit: 'MINUTES') { // Check every 1 minute
+                    timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
                         approvalRequest = input message: inputMessage, 
                                                ok: inputOkLabel,
                                                submitterParameter: submitterParameter
@@ -28,13 +28,13 @@ def call(Map args) {
                 } catch (Exception e) {
                     reminderCounter++  // Increment counter each time approval is not received
 
-                    if (reminderCounter == 2) { // Send reminder only after 5 minutes
+                    if (reminderCounter == 2) { // Send reminder email after 5 minutes
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
 
-                        def adminEmail = "${params.DEPLOYER}"  // Change to actual admin email
+                        def adminEmail = "${params.DEPLOYER}"  // Use deployer as recipient
+                        def subjectLine = "⚠️ Reminder: Approval Request Still Pending"
 
-                        def subject = "⚠️ Reminder: Approval Request Still Pending"
-                        def body = """\
+                        def emailBody = """\
                             <html>
                                 <body>
                                     <p>Hello,</p>
@@ -54,15 +54,17 @@ def call(Map args) {
                             </html>
                         """
 
-                        // Send email notification with HTML button
-                        emailext(
-                            subject: subject,
-                            body: body,
-                            to: adminEmail,
-                            mimeType: 'text/html' // Ensure email supports HTML formatting
-                        )
+                        try {
+                            // Use mail command instead of emailext
+                            mail to: adminEmail,
+                                 subject: subjectLine,
+                                 body: emailBody,
+                                 mimeType: 'text/html'
 
-                        echo "Reminder email sent to ${params.DEPLOYER}"
+                            echo "Reminder email sent to ${adminEmail}"
+                        } catch (Exception emailError) {
+                            echo "Failed to send reminder email: ${emailError.getMessage()}"
+                        }
                     }
                 }
             }
