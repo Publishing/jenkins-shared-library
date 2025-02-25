@@ -41,7 +41,7 @@ def call(Map args) {
                                     <p>The deployment request is still awaiting approval.</p>
                                     <ul>
                                         <li><b>Workflow:</b> ${params.SELECT_WORK_FLOW}</li>
-                                        <li><b>Workflow:</b> ${appName}</li>
+                                        <li><b>APP:</b> ${appName}</li>
                                         <li><b>Deployer:</b> ${params.DEPLOYER}</li>
                                     </ul>
                                     <p>Please review and approve the request at your earliest convenience.</p>
