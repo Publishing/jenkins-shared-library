@@ -9,6 +9,7 @@ def call(Map args) {
             def appName = args.appName 
             def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
             def inputOkLabel = args.inputOkLabel ?: "Deploy"
+            def inputAbortLabel = "Abort Deployment" // 🚀 Added explicit abort option
             def submitterParameter = args.submitterParameter ?: 'approver'
 
             echo "Awaiting manual approval..."
@@ -17,19 +18,32 @@ def call(Map args) {
 
             def approvalRequest = null
             def reminderCounter = 0  // Tracks failed approval attempts
+            def reminderSent = false // Ensures only one reminder is sent
 
             while (!approvalRequest) {
                 try {
                     timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
-                        approvalRequest = input message: inputMessage, 
-                                               ok: inputOkLabel,
-                                               submitterParameter: submitterParameter
+                        approvalRequest = input(
+                            message: inputMessage,
+                            ok: inputOkLabel,
+                            submitterParameter: submitterParameter,
+                            parameters: [
+                                string(name: 'Approval', defaultValue: 'Deploy', description: "Type 'Deploy' to proceed or 'Abort' to cancel")
+                            ]
+                        )
+
+                        if (approvalRequest == 'Abort') { // 🚨 Handle abort scenario
+                            echo "Deployment aborted by user."
+                            error("User chose to abort the deployment.") // Stop the pipeline
+                        }
+
                     }
                 } catch (Exception e) {
                     reminderCounter++  // Increment counter each time approval is not received
 
-                    if (reminderCounter == 1) { // Send reminder email after 5 minutes
+                    if (reminderCounter == 5 && !reminderSent) { // Send reminder after 5 minutes
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
+                        reminderSent = true // Ensure email is sent only once
 
                         def adminEmail = "${params.DEPLOYER}"  // Use deployer as recipient
                         def subjectLine = "⚠️ Reminder: Approval Request Still Pending"
