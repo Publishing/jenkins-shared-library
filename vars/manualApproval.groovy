@@ -6,39 +6,50 @@ def call(Map args) {
 
     script {
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
+
             def inputMessage = args.inputMessage ?: "Do you want to proceed with deployment?"
-            def inputOkLabel = "Deploy" // The main "Proceed" button
             def reminderCounter = 0
 
             echo "Awaiting manual approval..."
 
-            // Keep asking for approval until user clicks "Deploy" or "Cancel"
+            // Loop until user either Deploys or Aborts
             while (true) {
                 try {
                     // Wait 1 minute for user input
                     timeout(time: 1, unit: 'MINUTES') {
-                        // If user clicks "Deploy", the code continues.
-                        // If user clicks "Cancel", an AbortException is thrown.
-                        input message: inputMessage,
-                              ok: inputOkLabel
+                        // Show two buttons: "Deploy" and "Abort"
+                        def userAction = input(
+                            message: inputMessage,
+                            ok: "Deploy",            // main button
+                            submitter: "Abort",      // second button
+                            submitterParameter: "clickedBy"
+                        )
 
-                        // ✅ If we reach here, user clicked "Deploy"
+                        echo "User clicked: ${userAction}"
+                        
+                        // If user clicked "Abort"
+                        if ("Abort".equals(userAction)) {
+                            echo "🚨 Deployment aborted by user. Skipping remaining pipeline stages."
+                            currentBuild.result = 'ABORTED'
+                            error("Pipeline aborted manually.")
+                        }
+
+                        // Otherwise, user clicked "Deploy" => break out of loop & proceed
                         echo "✅ Deployment approved. Proceeding..."
                     }
-                    // Break out of the loop if user clicked "Deploy"
-                    break
+                    break // Once we succeed (user clicked Deploy), exit the while loop
 
                 } catch (hudson.AbortException e) {
-                    // The user clicked "Cancel" => Abort the pipeline
-                    echo "🚨 Deployment aborted by user. Skipping remaining pipeline stages."
+                    // Catches the top-level Jenkins "Cancel" link if used instead of "Abort" button
+                    echo "🚨 Deployment manually aborted."
                     currentBuild.result = 'ABORTED'
-                    error("Pipeline aborted manually.")
+                    error("Pipeline stopped due to manual abort.")
 
-                } catch (Exception e) {
-                    // Most likely a timeout after 1 minute
+                } catch (Exception timeoutError) {
+                    // We timed out after 1 minute (no one clicked anything)
                     reminderCounter++
 
-                    // After 5 minutes of waiting (5 timeouts), send a reminder email
+                    // After 5 consecutive timeouts (5 min), send a one-time reminder
                     if (reminderCounter == 5) {
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
 
@@ -79,6 +90,7 @@ def call(Map args) {
             }
 
             echo "✅ Approval granted. Proceeding..."
+
         } else {
             echo "ℹ️ Manual approval not required for workflow: ${params.SELECT_WORK_FLOW}"
         }
