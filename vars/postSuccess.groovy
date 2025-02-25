@@ -28,7 +28,7 @@ def call(Map args) {
                 } catch (Exception e) {
                     reminderCounter++  // Increment counter each time approval is not received
 
-                    if (reminderCounter == 5) { // Send reminder email after 5 minutes
+                    if (reminderCounter == 2) { // Send reminder email after 5 minutes
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
 
                         def adminEmail = "${params.DEPLOYER}"  // Use deployer as recipient
