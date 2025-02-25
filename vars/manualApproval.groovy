@@ -8,8 +8,6 @@ def call(Map args) {
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
             def appName = args.appName 
             def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
-            def inputOkLabel = args.inputOkLabel ?: "Deploy"
-            def inputAbortLabel = "Abort Deployment" // 🚀 Added explicit abort option
             def submitterParameter = args.submitterParameter ?: 'approver'
 
             echo "Awaiting manual approval..."
@@ -17,35 +15,32 @@ def call(Map args) {
             def jenkinsApprovalLink = "https://djg-jenkins.rtegroup.ie/job/CI-CD/job/${appName}" // Approval link
 
             def approvalRequest = null
-            def reminderCounter = 0  // Tracks failed approval attempts
-            def reminderSent = false // Ensures only one reminder is sent
+            def reminderCounter = 0  
 
             while (!approvalRequest) {
                 try {
                     timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
                         approvalRequest = input(
                             message: inputMessage,
-                            ok: inputOkLabel,
-                            submitterParameter: submitterParameter,
+                            submitter: submitterParameter,
                             parameters: [
-                                string(name: 'Approval', defaultValue: 'Deploy', description: "Type 'Deploy' to proceed or 'Abort' to cancel")
+                                choice(name: 'Approval', choices: ['Deploy', 'Abort'], description: 'Select an option')
                             ]
                         )
 
-                        if (approvalRequest == 'Abort') { // 🚨 Handle abort scenario
+                        if (approvalRequest == 'Abort') {
                             echo "Deployment aborted by user."
-                            error("User chose to abort the deployment.") // Stop the pipeline
+                            error("User chose to abort the deployment.")
                         }
 
                     }
                 } catch (Exception e) {
-                    reminderCounter++  // Increment counter each time approval is not received
+                    reminderCounter++
 
-                    if (reminderCounter == 5 && !reminderSent) { // Send reminder after 5 minutes
+                    if (reminderCounter == 5) {
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
-                        reminderSent = true // Ensure email is sent only once
 
-                        def adminEmail = "${params.DEPLOYER}"  // Use deployer as recipient
+                        def adminEmail = "${params.DEPLOYER}"
                         def subjectLine = "⚠️ Reminder: Approval Request Still Pending"
 
                         def emailBody = """\
@@ -70,7 +65,6 @@ def call(Map args) {
                         """
 
                         try {
-                            // Use mail command instead of emailext
                             mail to: adminEmail,
                                  subject: subjectLine,
                                  body: emailBody,
@@ -84,17 +78,7 @@ def call(Map args) {
                 }
             }
 
-            // Retrieve the approver's email from Jenkins User API
-            def approverUser = Jenkins.instance.getUser(approvalRequest)
-            def approverEmail = approverUser?.getProperty(hudson.tasks.Mailer.UserProperty)?.getAddress()
-
-            if (approverEmail) {
-                echo "Approver's Email: ${approverEmail}"
-                env.approver = approverEmail
-            } else {
-                echo "No email address found for approver: ${approvalRequest}"
-                env.approver = approvalRequest
-            }
+            echo "Approval granted: ${approvalRequest}"
         } else {
             echo "Manual approval not required for workflow: ${params.SELECT_WORK_FLOW}"
         }
