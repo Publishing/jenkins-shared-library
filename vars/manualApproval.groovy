@@ -7,71 +7,73 @@ def call(Map args) {
     script {
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
             def inputMessage = args.inputMessage ?: "Do you want to proceed with deployment?"
-            def inputOkLabel = "Deploy"   // ✅ Creates the "Deploy" button
-            def inputAbortLabel = "Abort" // ✅ Creates the "Abort" button
-            def reminderCounter = 0  
+            def inputOkLabel = "Deploy" // The main "Proceed" button
+            def reminderCounter = 0
 
             echo "Awaiting manual approval..."
 
-            try {
-                timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
-                    def approval = input(
-                        message: inputMessage,
-                        parameters: [
-                            choice(name: 'Approval', choices: ['Deploy', 'Abort'], description: "Select 'Deploy' to continue or 'Abort' to cancel")
-                        ]
-                    )
+            // Keep asking for approval until user clicks "Deploy" or "Cancel"
+            while (true) {
+                try {
+                    // Wait 1 minute for user input
+                    timeout(time: 1, unit: 'MINUTES') {
+                        // If user clicks "Deploy", the code continues.
+                        // If user clicks "Cancel", an AbortException is thrown.
+                        input message: inputMessage,
+                              ok: inputOkLabel
 
-                    if (approval == 'Abort') { // 🚨 Handle "Abort" button click
-                        echo "🚨 Deployment aborted by user. Skipping remaining pipeline stages."
-                        currentBuild.result = 'ABORTED' // ✅ Marks build as "Aborted" (skips next stages)
-                        error("Pipeline aborted manually.") // ✅ Stops execution
+                        // ✅ If we reach here, user clicked "Deploy"
+                        echo "✅ Deployment approved. Proceeding..."
                     }
+                    // Break out of the loop if user clicked "Deploy"
+                    break
 
-                    echo "✅ Deployment approved. Proceeding with deployment..."
-                }
-            } catch (hudson.AbortException e) { 
-                echo "🚨 Deployment manually aborted."
-                currentBuild.result = 'ABORTED' // ✅ Mark build as "Aborted"
-                error("Pipeline stopped due to manual abort.") // ✅ Stops execution
-            } catch (Exception e) { // Handle timeout or errors
-                reminderCounter++
+                } catch (hudson.AbortException e) {
+                    // The user clicked "Cancel" => Abort the pipeline
+                    echo "🚨 Deployment aborted by user. Skipping remaining pipeline stages."
+                    currentBuild.result = 'ABORTED'
+                    error("Pipeline aborted manually.")
 
-                if (reminderCounter == 1) { // Send reminder after 5 minutes
-                    echo "Approval request pending for 5 minutes. Sending reminder email..."
+                } catch (Exception e) {
+                    // Most likely a timeout after 1 minute
+                    reminderCounter++
 
-                    def adminEmail = "${params.DEPLOYER}"
-                    def subjectLine = "⚠️ Reminder: Approval Request Still Pending"
+                    // After 5 minutes of waiting (5 timeouts), send a reminder email
+                    if (reminderCounter == 5) {
+                        echo "Approval request pending for 5 minutes. Sending reminder email..."
 
-                    def emailBody = """\
-                        <html>
-                            <body>
-                                <p>Hello,</p>
-                                <p>The deployment request is still awaiting approval.</p>
-                                <ul>
-                                    <li><b>Workflow:</b> ${params.SELECT_WORK_FLOW}</li>
-                                    <li><b>Deployer:</b> ${params.DEPLOYER}</li>
-                                </ul>
-                                <p>Please review and approve the request at your earliest convenience.</p>
-                                <p>
-                                    <a href="${env.BUILD_URL}" style="background-color:#008CBA;color:white;padding:12px 20px;text-decoration:none;font-size:16px;border-radius:5px;display:inline-block;">
-                                        ✅ Approve Request
-                                    </a>
-                                </p>
-                                <p>Regards,<br>Jenkins</p>
-                            </body>
-                        </html>
-                    """
+                        def adminEmail = "${params.DEPLOYER}"
+                        def subjectLine = "⚠️ Reminder: Approval Request Still Pending"
 
-                    try {
-                        mail to: adminEmail,
-                             subject: subjectLine,
-                             body: emailBody,
-                             mimeType: 'text/html'
+                        def emailBody = """\
+                            <html>
+                                <body>
+                                    <p>Hello,</p>
+                                    <p>The deployment request is still awaiting approval.</p>
+                                    <ul>
+                                        <li><b>Workflow:</b> ${params.SELECT_WORK_FLOW}</li>
+                                        <li><b>Deployer:</b> ${params.DEPLOYER}</li>
+                                    </ul>
+                                    <p>Please review and approve the request at your earliest convenience.</p>
+                                    <p>
+                                        <a href="${env.BUILD_URL}" style="background-color:#008CBA;color:white;padding:12px 20px;text-decoration:none;font-size:16px;border-radius:5px;display:inline-block;">
+                                            ✅ Approve Request
+                                        </a>
+                                    </p>
+                                    <p>Regards,<br>Jenkins</p>
+                                </body>
+                            </html>
+                        """
 
-                        echo "Reminder email sent to ${adminEmail}"
-                    } catch (Exception emailError) {
-                        echo "Failed to send reminder email: ${emailError.getMessage()}"
+                        try {
+                            mail to: adminEmail,
+                                 subject: subjectLine,
+                                 body: emailBody,
+                                 mimeType: 'text/html'
+                            echo "Reminder email sent to ${adminEmail}"
+                        } catch (Exception emailError) {
+                            echo "Failed to send reminder email: ${emailError.getMessage()}"
+                        }
                     }
                 }
             }
