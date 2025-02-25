@@ -16,7 +16,7 @@ def call(Map args) {
             def jenkinsApprovalLink = "https://djg-jenkins.rtegroup.ie/job/CI-CD/job/${appName}" // Approval link
 
             def approvalRequest = null
-            def reminderSent = false
+            def reminderCounter = 0  // Counter to track attempts
 
             while (!approvalRequest) {
                 try {
@@ -26,8 +26,9 @@ def call(Map args) {
                                                submitterParameter: submitterParameter
                     }
                 } catch (Exception e) {
-                    if (!reminderSent) { // Send reminder only once after 5 minutes
-                        reminderSent = true
+                    reminderCounter++  // Increment counter each time approval is not received
+
+                    if (reminderCounter == 5) { // Send reminder only after 5 minutes
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
 
                         def adminEmail = "${params.DEPLOYER}"  // Change to actual admin email
