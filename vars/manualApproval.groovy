@@ -16,28 +16,28 @@ def call(Map args) {
 
             def approvalRequest = null
             def reminderCounter = 0  
+            def approverUsername = null
 
             while (!approvalRequest) {
                 try {
                     timeout(time: 1, unit: 'MINUTES') { // Wait for approval for 1 minute
                         approvalRequest = input(
                             message: inputMessage,
-                            submitter: submitterParameter,
-                            parameters: [
-                                choice(name: 'Approval', choices: ['Deploy', 'Abort'], description: 'Select an option')
-                            ]
+                            ok: "Deploy", // ✅ This button proceeds with deployment
+                            submitter: "Abort", // ❌ This button stops the pipeline
                         )
 
-                        if (approvalRequest == 'Abort') {
-                            echo "Deployment aborted by user."
-                            error("User chose to abort the deployment.")
-                        }
-
+                        approverUsername = currentBuild.rawBuild.getCause(hudson.model.Cause$UserIdCause)?.getUserId()
+                        echo "Approval granted by: ${approverUsername}"
+                        
                     }
-                } catch (Exception e) {
+                } catch (hudson.AbortException e) { // 🚨 Handle "Abort" button click
+                    echo "Deployment aborted by user."
+                    error("User chose to abort the deployment.")
+                } catch (Exception e) { // Handle timeout or errors
                     reminderCounter++
 
-                    if (reminderCounter == 5) {
+                    if (reminderCounter == 5) { // Send reminder after 5 minutes
                         echo "Approval request pending for 5 minutes. Sending reminder email..."
 
                         def adminEmail = "${params.DEPLOYER}"
