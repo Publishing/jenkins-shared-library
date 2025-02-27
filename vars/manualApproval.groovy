@@ -49,9 +49,22 @@ def call(Map args) {
                 if (!fileExists('approvalFlag.txt')) {
                     echo "No manual approval action taken within 2 minutes. Sending reminder email..."
                     mail to: params.DEPLOYER,
-                         subject: "Reminder: Deployment Approval Pending",
-                         body: "No manual approval was received within 2 minutes. Please take action if deployment is intended.",
-                         mimeType: 'text/html'
+                     subject: "Reminder: ${args.appName} Deployment Approval Pending",
+                     body: """
+                       <html>
+                         <body>
+                           <p>No manual approval was received within 2 minutes. Please take action if deployment is intended.</p>
+                           <p>
+                             <a href="https://djg-jenkins.rtegroup.ie/job/CI-CD/job/${args.appName}/" 
+                                style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center;
+                                       text-decoration: none; display: inline-block; font-size: 16px; border-radius: 4px;">
+                                Approve Deployment
+                             </a>
+                           </p>
+                         </body>
+                       </html>
+                     """,
+                     mimeType: 'text/html'
                     // After sending the reminder, wait until the flag file is created.
                     waitUntil { fileExists('approvalFlag.txt') }
                 }
