@@ -38,19 +38,22 @@ def call(Map args) {
             }
             
             branches['reminder'] = {
-                // Sleep for 2 minutes.
-                sleep time: 120, unit: 'SECONDS'
-                // Check if the flag file exists; if not, send a reminder.
+                // Poll for the flag file every 5 seconds, up to 2 minutes.
+                def waited = 0
+                def interval = 5
+                while (waited < 120 && !fileExists('approvalFlag.txt')) {
+                    sleep time: interval, unit: 'SECONDS'
+                    waited += interval
+                }
+                // If after polling 2 minutes the flag file is still absent, send a reminder email.
                 if (!fileExists('approvalFlag.txt')) {
                     echo "No manual approval action taken within 2 minutes. Sending reminder email..."
                     mail to: params.DEPLOYER,
                          subject: "Reminder: Deployment Approval Pending",
                          body: "No manual approval was received within 2 minutes. Please take action if deployment is intended.",
                          mimeType: 'text/html'
-                    // After sending the email, wait until the flag file is created.
-                    waitUntil {
-                        return fileExists('approvalFlag.txt')
-                    }
+                    // After sending the reminder, wait until the flag file is created.
+                    waitUntil { fileExists('approvalFlag.txt') }
                 }
             }
             
