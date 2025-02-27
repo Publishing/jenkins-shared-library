@@ -11,43 +11,54 @@ def call(Map args) {
             
             echo "Awaiting manual approval..."
             
-            def approvalResult = null
-            // To ensure we send the reminder email only once
-            def reminderSent = false
+            // Remove any existing flag file (to start fresh)
+            if (fileExists('approvalFlag.txt')) {
+                echo "Removing previous approval flag file..."
+                sh "rm -f approvalFlag.txt"
+            }
             
-            // Loop until an approval is received.
-            while (approvalResult == null) {
+            def approvalResult = null
+            
+            // Define two parallel branches that share a flag file in the workspace.
+            def branches = [:]
+            
+            branches['approval'] = {
                 try {
-                    // Wrap the input prompt in a 2‑minute timeout.
-                    approvalResult = timeout(time: 2, unit: 'MINUTES') {
-                        input message: inputMessage,
-                              ok: inputOkLabel,
-                              submitterParameter: submitterParameter
-                    }
+                    // This input step waits indefinitely.
+                    approvalResult = input message: inputMessage,
+                                           ok: inputOkLabel,
+                                           submitterParameter: submitterParameter
+                    // Write a flag file to signal that input was received.
+                    writeFile file: 'approvalFlag.txt', text: 'approved'
                 } catch (err) {
-                    // Check if the exception is a timeout.
-                    if (err.toString().contains("Timeout")) {
-                        if (!reminderSent) {
-                            echo "No manual approval action taken within 2 minutes. Sending reminder email..."
-                            // Send reminder email to the deployer.
-                            mail to: params.DEPLOYER,
-                                 subject: "Reminder: Deployment Approval Pending",
-                                 body: "No manual approval was received within 2 minutes. Please take action if deployment is intended.",
-                                 mimeType: 'text/html'
-                            reminderSent = true
-                        }
-                        // Loop will re‑issue the input prompt.
-                    } else {
-                        // If the user clicks Abort, input throws an exception. Propagate it immediately.
-                        throw err
+                    // If the user clicks Abort, write a flag so the reminder branch won’t send an email.
+                    writeFile file: 'approvalFlag.txt', text: 'aborted'
+                    throw err  // Abort the pipeline immediately.
+                }
+            }
+            
+            branches['reminder'] = {
+                // Sleep for 2 minutes.
+                sleep time: 120, unit: 'SECONDS'
+                // Check if the flag file exists; if not, send a reminder.
+                if (!fileExists('approvalFlag.txt')) {
+                    echo "No manual approval action taken within 2 minutes. Sending reminder email..."
+                    mail to: params.DEPLOYER,
+                         subject: "Reminder: Deployment Approval Pending",
+                         body: "No manual approval was received within 2 minutes. Please take action if deployment is intended.",
+                         mimeType: 'text/html'
+                    // After sending the email, wait until the flag file is created.
+                    waitUntil {
+                        return fileExists('approvalFlag.txt')
                     }
                 }
             }
             
-            // Process the approval result after a valid input is received.
+            parallel branches
+            
+            // Process the approval result after both branches complete.
             def approverUser = Jenkins.instance.getUser(approvalResult)
             def approverEmail = approverUser?.getProperty(hudson.tasks.Mailer.UserProperty)?.getAddress()
-            
             if (approverEmail) {
                 echo "Approver's Email: ${approverEmail}"
                 env.approver = approverEmail
