@@ -8,9 +8,9 @@ def call(Map args) {
             //def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
             def inputMessage = ""
             if (params.SELECT_CLONING_OPTION == 'TAG') {
-            def inputMessage = "Deploying ${args.appName} TAG : ${params.TAG}, on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "Deploying ${args.appName} TAG : ${params.TAG}, on ${params.TARGET_ENVIRONMENT} environemnt."
              } else {
-            def inputMessage = "Deploying ${args.appName} TAG : ${params.BRANCH}, on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "Deploying ${args.appName} TAG : ${params.BRANCH}, on ${params.TARGET_ENVIRONMENT} environemnt."
             }
             def inputOkLabel = args.inputOkLabel ?: "Deploy"
             def submitterParameter = args.submitterParameter ?: 'approver'
