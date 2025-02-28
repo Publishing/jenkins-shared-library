@@ -6,7 +6,11 @@ def call(Map args) {
     script {
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
             //def inputMessage = args.inputMessage ?: "Proceed with deployment to server?"
-            def inputMessage = "Deploying ${args.appName} [${params.TAG}/${params.BRANCH}] on ${params.TARGET_ENVIRONMENT}"
+            if (params.SELECT_CLONING_OPTION == 'TAG') {
+            def inputMessage = "Deploying ${args.appName} TAG : ${params.TAG}, on ${params.TARGET_ENVIRONMENT}"
+             } else {
+            def inputMessage = "Deploying ${args.appName} TAG : ${params.BRANCH}, on ${params.TARGET_ENVIRONMENT}"
+            }
             def inputOkLabel = args.inputOkLabel ?: "Deploy"
             def submitterParameter = args.submitterParameter ?: 'approver'
             
