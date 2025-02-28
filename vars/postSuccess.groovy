@@ -1,4 +1,5 @@
 def call(Map args) {
+    import groovy.json.JsonOutput
     try {
         // Extract required arguments or use defaults
         def appName = args.appName ?: env.APP_NAME
