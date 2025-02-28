@@ -143,10 +143,24 @@ def call(Map args) {
                 """
         } else {
             emailBody += """
-                <p>SonarQube Dashboard: <a href="${sonarUrl}">Sonar Dashboard</a></p>
-                <p>Jenkins Logs: <a href="${env.BUILD_URL}">Jenkins Logs</a></p>
-                </body></html>
-                """
+            <p>
+              <a href="${sonarUrl}" 
+                 style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; 
+                        border-radius: 4px; font-weight: bold;">
+                Sonar Dashboard
+              </a>
+            </p>
+            <p>
+              <a href="${env.BUILD_URL}" 
+                 style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; 
+                        border-radius: 4px; font-weight: bold;">
+                Jenkins Logs
+              </a>
+            </p>
+          </body>
+        </html>
+        """
+
         }
 
 
