@@ -144,22 +144,34 @@ def call(Map args) {
         } else {
             emailBody += """
             <p>
-              <a href="${sonarUrl}" 
-                 style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; 
-                        border-radius: 4px; font-weight: bold;">
+              <a href="${sonarUrl}"
+                 style="
+                   background-color: #4CAF50; 
+                   color: white; 
+                   padding: 10px 20px; 
+                   text-decoration: none; 
+                   border-radius: 4px; 
+                   font-weight: bold; 
+                   margin-right: 10px;
+                 ">
                 Sonar Dashboard
               </a>
-            </p>
-            <p>
-              <a href="${env.BUILD_URL}" 
-                 style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; 
-                        border-radius: 4px; font-weight: bold;">
+              <a href="${env.BUILD_URL}"
+                 style="
+                   background-color: #007bff; 
+                   color: white; 
+                   padding: 10px 20px; 
+                   text-decoration: none; 
+                   border-radius: 4px; 
+                   font-weight: bold;
+                 ">
                 Jenkins Logs
               </a>
             </p>
-          </body>
-        </html>
-        """
+            </body>
+            </html>
+            """
+
 
         }
 
