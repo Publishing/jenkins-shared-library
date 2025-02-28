@@ -146,7 +146,7 @@ def call(Map args) {
             <p>
               <a href="${sonarUrl}"
                  style="
-                   background-color: #6eecec; 
+                   background-color: #ADDDE6; 
                    color: white; 
                    padding: 10px 20px; 
                    text-decoration: none; 
@@ -158,7 +158,7 @@ def call(Map args) {
               </a>
               <a href="${env.BUILD_URL}"
                  style="
-                   background-color: #6eecec; 
+                   background-color: #ADDDE6; 
                    color: white; 
                    padding: 10px 20px; 
                    text-decoration: none; 
