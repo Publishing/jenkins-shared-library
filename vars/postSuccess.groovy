@@ -6,7 +6,7 @@ def call(Map args) {
         def appName = args.appName ?: env.APP_NAME
         def tmpDir = args.tmpDir ?: env.TMP_DIR
         def deployer = args.deployer ?: params.DEPLOYER
-        def sonarUrl = args.sonarUrl ?: env.SONAR_URL
+        def sonarUrl = "https://djg-jenkins.rtegroup.ie/sonar/dashboard?id=${appName}.app"
         def sonarStatus = args.sonarStatus ?: "Unknown"
         def emailRecipients = args.emailRecipients ?: params.DEPLOYER
         def branchOrTag = params.SELECT_CLONING_OPTION == 'BRANCH' ? params.BRANCH : params.TAG
