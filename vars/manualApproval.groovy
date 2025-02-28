@@ -9,15 +9,15 @@ def call(Map args) {
             def inputMessage = ""
             if (params.TARGET_ENVIRONMENT == 'beta') {
             if (params.SELECT_CLONING_OPTION == 'TAG') {
-            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.TAG}] on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.TAG}] on ${params.TARGET_ENVIRONMENT} environemnt🚨"
              } else {
-            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.BRANCH}] on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.BRANCH}] on ${params.TARGET_ENVIRONMENT} environemnt🚨"
             }
             } else {
             if (params.SELECT_CLONING_OPTION == 'TAG') {
-            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.TAG}] on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "Deploying ${args.appName} [TAG : ${params.TAG}] on ${params.TARGET_ENVIRONMENT} environemnt."
              } else {
-            inputMessage = "🚨Deploying ${args.appName} [TAG : ${params.BRANCH}] on ${params.TARGET_ENVIRONMENT} environemnt."
+            inputMessage = "Deploying ${args.appName} [TAG : ${params.BRANCH}] on ${params.TARGET_ENVIRONMENT} environemnt."
             }
             }
             def inputOkLabel = args.inputOkLabel ?: "Deploy"
