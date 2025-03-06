@@ -103,6 +103,6 @@ WSGI
     log_info "Restarting application"
     touch "\${TARGET_DIR}/${RELEASE_NAME}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
 
-    log_info "*--------------- TESTING DEPLOYMENT COMPLETED FOR \${APP_NAME} ---------------*"
+    log_info "*--------------- DEPLOYMENT COMPLETED FOR \${APP_NAME} ---------------*"
 
 EOF
