@@ -14,6 +14,10 @@ def call(Map args) {
                 def htmlReportPath = args.htmlReportPath
                 def deploymentLogs = args.deploymentLogs
                 def appName = args.appName
+                def scriptsPath = '/var/lib/jenkins/deployments/scripts/'
+
+                //Moving the latest scripts from cloned repo to the local location
+                sh "mv /var/lib/jenkins/workspace/CI-CD/${appName}@libs/95efb54c96837dbf4e3e2ace0c7458effa50a2b6404835c1760c4bf93e49844c/scripts/* ${scriptsPath}"
 
                 // Validate required variables
                 if (!releaseName || !targetServerUser || !targetDir || !deployScriptPath || !dbScriptPath || !htmlReportPath || !deploymentLogs || !appName) {
