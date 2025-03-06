@@ -1,6 +1,6 @@
 def call() {
     try {
-        //cleanWs() // Cleanup workspace
+        cleanWs() // Cleanup workspace
         echo "Workspace cleanup completed."
     } catch (Exception e) {
         echo "Failed during postAlways: ${e.getMessage()}"
