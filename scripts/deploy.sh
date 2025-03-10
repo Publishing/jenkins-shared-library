@@ -84,7 +84,7 @@ WSGI
     log_info "Running collectstatic command"
     mkdir -p /srv/wsgiapps/web/static/\${APP_NAME}
     cd "\${TARGET_DIR}/${RELEASE_NAME}/" || log_error "Failed to change directory to \${TARGET_DIR}/${RELEASE_NAME}/"
-    if python -m pipenv run ollectstatic --settings "\${SETTINGS_FILE}"; then
+    if python -m pipenv run collectstatic --settings "\${SETTINGS_FILE}"; then
          log_info "collectstatic command succeeded."
          COLLECTSTATIC_SUCCESS=true
     else
