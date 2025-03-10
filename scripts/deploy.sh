@@ -107,6 +107,9 @@ WSGI
               fi
          done
 
+         # Change back to TARGET_DIR so the symlink is created in the correct location
+         cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
+            
          # Update symlink to new release
          log_info "Updating symlink to current release"
          ln -sfn "\${TARGET_DIR}/${RELEASE_NAME}" current || log_error "Failed to update symlink"
