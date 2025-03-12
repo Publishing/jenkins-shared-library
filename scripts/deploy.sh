@@ -31,11 +31,11 @@ ssh "${TARGET_SERVER_USER}@${TARGET_SERVER}" <<EOF
     CACHEBUST="${CACHEBUST}"
 
     # Clear the log file at the start of each deployment
-    > "\${DEPLOYMENT_LOGS}/${APP_NAME}"
+    > "\${DEPLOYMENT_LOGS}/\${APP_NAME}"
 
-    # Define logging function
-    log_info() { echo "INFO - \$1" >> "\${DEPLOYMENT_LOGS}/${APP_NAME}"; }
-    log_error() { echo "ERROR - \$1" >> "\${DEPLOYMENT_LOGS}/${APP_NAME}"; exit 1; }
+    # Define logging functions
+    log_info() { echo "INFO - \$1" >> "\${DEPLOYMENT_LOGS}/\${APP_NAME}"; }
+    log_error() { echo "ERROR - \$1" >> "\${DEPLOYMENT_LOGS}/\${APP_NAME}"; exit 1; }
 
     # Define version comparison function
     compare_versions() {
@@ -44,7 +44,9 @@ ssh "${TARGET_SERVER_USER}@${TARGET_SERVER}" <<EOF
         local IFS=.
         local i v1=(\$version1) v2=(\$version2)
         for ((i=0; i<\${#v1[@]}; i++)); do
-            if [[ \${v1[i]} -lt \${v2[i]} ]]; then return 1; elif [[ \${v1[i]} -gt \${v2[i]} ]]; then return 2; fi
+            if [[ \${v1[i]} -lt \${v2[i]} ]]; then return 1
+            elif [[ \${v1[i]} -gt \${v2[i]} ]]; then return 2
+            fi
         done
         return 0
     }
@@ -60,23 +62,8 @@ ssh "${TARGET_SERVER_USER}@${TARGET_SERVER}" <<EOF
     tar -xf "\${TARGET_DIR}/${RELEASE_NAME}.tar" || log_error "Failed to extract \${RELEASE_NAME}.tar"
     rm -rf "\${TARGET_DIR}/${RELEASE_NAME}.tar" || log_error "Failed to delete \${RELEASE_NAME}.tar"
 
-    # Clean up old releases
-    for dir in \${APP_NAME}_release.*; do
-        DIR_VERSION=\$(echo "\$dir" | grep -oE 'V[0-9]+\.[0-9]+\.[0-9]+$')
-        if [[ "\$dir" != "\${RELEASE_NAME}" ]] && [[ "\$DIR_VERSION" =~ ^V[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            compare_versions "\${DIR_VERSION#V}" "\${CURRENT_VERSION#V}"
-            if [[ \$? -eq 1 ]]; then
-                log_info "Deleting old release folder: \${dir}"
-                rm -rf "\${dir}"
-            else
-                log_info "Keeping release folder: \${dir}"
-            fi
-        fi
-    done
-
-    # Update symlink
-    log_info "Updating symlink to current release"
-    ln -sfn "\${TARGET_DIR}/${RELEASE_NAME}" current || log_error "Failed to update symlink"
+    # Save current deployment symlink target (if exists)
+    PREV_DEPLOYMENT=\$(readlink current 2>/dev/null || echo "")
 
     # Write the modified wsgi.py content to the target file
     log_info "Writing modified wsgi.py content to the target file"
@@ -97,12 +84,53 @@ WSGI
     log_info "Running collectstatic command"
     mkdir -p /srv/wsgiapps/web/static/\${APP_NAME}
     cd "\${TARGET_DIR}/${RELEASE_NAME}/" || log_error "Failed to change directory to \${TARGET_DIR}/${RELEASE_NAME}/"
-    python -m pipenv run collectstatic --settings "\${SETTINGS_FILE}" || log_error "Failed to run collectstatic"
+    if python -m pipenv run collectstatic --settings "\${SETTINGS_FILE}"; then
+         log_info "collectstatic command succeeded."
+         COLLECTSTATIC_SUCCESS=true
+    else
+         log_info "collectstatic command failed."
+         COLLECTSTATIC_SUCCESS=false
+    fi
 
-    # Restart the application
-    log_info "Restarting application"
-    touch "\${TARGET_DIR}/${RELEASE_NAME}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
+    if [ "\${COLLECTSTATIC_SUCCESS}" = "true" ]; then
+    
+         # Change back to TARGET_DIR before cleaning up
+         cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
+         
+         # Clean up old releases only after successful collectstatic
+         for dir in \${APP_NAME}_release.*; do
+              DIR_VERSION=\$(echo "\$dir" | grep -oE 'V[0-9]+\.[0-9]+\.[0-9]+$')
+              if [[ "\$dir" != "\${RELEASE_NAME}" ]] && [[ "\$DIR_VERSION" =~ ^V[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  compare_versions "\${DIR_VERSION#V}" "\${CURRENT_VERSION#V}"
+                  if [[ \$? -eq 1 ]]; then
+                      log_info "Deleting old release folder: \${dir}"
+                      rm -rf "\${dir}"
+                  else
+                      log_info "Keeping release folder: \${dir}"
+                  fi
+              fi
+         done
 
-    log_info "*--------------- DEPLOYMENT COMPLETED FOR \${APP_NAME} ---------------*"
+         # Change back to TARGET_DIR so the symlink is created in the correct location
+         cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
+            
+         # Update symlink to new release
+         log_info "Updating symlink to current release"
+         ln -sfn "\${TARGET_DIR}/${RELEASE_NAME}" current || log_error "Failed to update symlink"
+
+         # Restart the application
+         log_info "Restarting application"
+         touch "\${TARGET_DIR}/${RELEASE_NAME}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
+
+         log_info "*--------------- DEPLOYMENT COMPLETED FOR \${APP_NAME} ---------------*"
+    else
+         log_error "collectstatic command failed. Reverting to previous deployment."
+         if [[ -n "\${PREV_DEPLOYMENT}" ]]; then
+              ln -sfn "\${PREV_DEPLOYMENT}" current || log_error "Failed to revert symlink"
+              touch "\${PREV_DEPLOYMENT}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
+              log_info "Reverted to previous deployment: \${PREV_DEPLOYMENT}"
+         fi
+         exit 1
+    fi
 
 EOF
