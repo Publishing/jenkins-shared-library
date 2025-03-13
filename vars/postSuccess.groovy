@@ -109,7 +109,7 @@ def call(Map args) {
 
         // Define other parameters
         def NEW_RELIC_API_KEY = credentials('new-relic') 
-        echo "Fetched API Key: ${NEW_RELIC_API_KEY.substring(0, 4)}****"
+        
 
         // Get the current timestamp in the required format
         def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
