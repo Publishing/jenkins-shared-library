@@ -129,7 +129,7 @@ def call(Map args) {
         new URL(url).openConnection().with { connection ->
             connection.setRequestMethod("POST")
             connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
+            connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY.toString())
             connection.doOutput = true
 
             // Write the payload to the request
