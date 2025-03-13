@@ -1,5 +1,6 @@
 import groovy.json.JsonOutput
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+import java.time.ZonedDateTime
 def call(Map args) {
     
     try {
@@ -77,7 +78,7 @@ def call(Map args) {
         def NEW_RELIC_API_KEY = 'NRAK-PQBPUODXM90M7HFE6EIP1TTYEUC' 
 
         // Get the current timestamp in the required format
-        def timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())
+        def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 
         // Create the JSON payload
         def payload = [
