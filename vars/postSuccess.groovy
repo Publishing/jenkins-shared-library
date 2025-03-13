@@ -49,12 +49,38 @@ def call(Map args) {
         ]
 
         def NEW_RELIC_APP_IDS_DEV = [
-            // Add your dev app IDs here
+            'api': 1260879206,
+            'dotie': 1245684946,
+            'archives': 1295804988,
+            'feeds': 1265649480,
+            'jpegresizer': 1292889609,
+            'news': 1291326095,
+            'newsapi': 1260879196,
+            'rteavgen': 1384442476,
+            'webhooks': 1183285327
         ]
 
-        def NEW_RELIC_APP_IDS_TEST = [
-            // Add your test app IDs here
+        def NEW_RELIC_APP_IDS_NEXT = [
+            'api': 1352406894,
+            'dotie': 1258781423,
+            'archives': 1295178005,
+            'feeds': 1265670781,
+            'jpegresizer': 1319499070,
+            'news': 1309456381,
+            'newsapi': 1260886891,
+            'rteavgen': 1384470052
         ]
+
+        def NEW_RELIC_APP_IDS_UAT = [
+            'api': 1363437947,
+            'dotie': 1347178004,
+            'archives': 1381026066,
+            'feeds': 1379506271,
+            'jpegresizer': 1386066164,
+            'newsapi': 1376763271,
+            'rteavgen': 1386120661
+        ]
+
 
         // Determine the app ID array to use based on the environment
         def appIds
@@ -67,6 +93,12 @@ def call(Map args) {
                 break
             case 'prod':
                 appIds = NEW_RELIC_APP_IDS
+                break
+            case 'next':
+                appIds = NEW_RELIC_APP_IDS_NEXT
+                break
+            case 'uat':
+                appIds = NEW_RELIC_APP_IDS_UAT
                 break
             default:
                 appIds = NEW_RELIC_APP_IDS_TEST // Default to test app IDs
