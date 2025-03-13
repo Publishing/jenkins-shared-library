@@ -100,16 +100,20 @@ WSGI
          # Sort the directories by version and keep the latest two
          sorted_dirs=($(ls -d ${APP_NAME}_release.* | sort -t. -k3,3n -k4,4n -k5,5n))
 
+         # Debugging: Log the sorted directories
+         for dir in "\${sorted_dirs[@]}"; do
+             echo "Directory: \$dir"
+         done
+
          # Keep the latest two builds
          for ((i=0; i<${#sorted_dirs[@]}-2; i++)); do
-             dir=${sorted_dirs[i]}
-             log_info "Deleting old release folder: ${dir}"
-             rm -rf "${dir}"
+             echo "Deleting old release: \${sorted_dirs[$i]}"
+             rm -rf "\${sorted_dirs[$i]}"
          done
 
          # Log the kept directories
-         log_info "Keeping latest release folder: ${sorted_dirs[-1]}"
-         log_info "Keeping previous release folder: ${sorted_dirs[-2]}"
+         log_info "Keeping latest release folder: \${sorted_dirs[-1]}"
+         log_info "Keeping previous release folder: \${sorted_dirs[-2]}"
 
          # Change back to TARGET_DIR so the symlink is created in the correct location
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
