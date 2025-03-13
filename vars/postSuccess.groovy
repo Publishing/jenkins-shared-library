@@ -1,4 +1,5 @@
 import groovy.json.JsonOutput
+// import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 import java.time.ZonedDateTime
 def call(Map args) {
@@ -93,23 +94,24 @@ def call(Map args) {
 
         // Make the POST request
         def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
-        def connection = new URL(url).openConnection() as HttpURLConnection
-        connection.setRequestMethod("POST")
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
-        connection.doOutput = true
+        new URL(url).openConnection().with { connection ->
+            connection.setRequestMethod("POST")
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
+            connection.doOutput = true
 
-        // Write the payload to the request
-        def writer = new OutputStreamWriter(connection.outputStream)
-        writer.write(JsonOutput.toJson(payload))
-        writer.flush()
-        writer.close()
+            // Write the payload to the request
+            def writer = new OutputStreamWriter(connection.outputStream)
+            writer.write(JsonOutput.toJson(payload))
+            writer.flush()
+            writer.close()
 
-        // Get the response
-        def responseCode = connection.responseCode
-        def responseMessage = connection.responseMessage
-        println "Response Code: ${responseCode}"
-        println "Response Message: ${responseMessage}"
+            // Get the response
+            def responseCode = connection.responseCode
+            def responseMessage = connection.responseMessage
+            println "Response Code: ${responseCode}"
+            println "Response Message: ${responseMessage}"
+        }
 
         // Trigger external workflow only for CI-CD or UD workflows
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
