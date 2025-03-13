@@ -111,9 +111,9 @@ WSGI
              rm -rf "\${sorted_dirs[$i]}"
          done
 
-         # Log the kept directories with indices
-         log_info "Keeping latest release folder: Index: \${#sorted_dirs[@]}-1, Directory: \${sorted_dirs[-1]}"
-         log_info "Keeping previous release folder: Index: \${#sorted_dirs[@]}-2, Directory: \${sorted_dirs[-2]}"
+         # Log the kept directories with correct indices
+         log_info "Keeping latest release folder: Index: \$(( \${#sorted_dirs[@]} - 1 )), Directory: \${sorted_dirs[-1]}"
+         log_info "Keeping previous release folder: Index: \$(( \${#sorted_dirs[@]} - 2 )), Directory: \${sorted_dirs[-2]}"
 
          # Change back to TARGET_DIR so the symlink is created in the correct location
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
