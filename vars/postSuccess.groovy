@@ -18,114 +18,113 @@ def call(Map args) {
         def udWorkflowTriggerUrl = "https://prod-96.westeurope.logic.azure.com:443/workflows/5eb03b72dde44648aab564d9754309f2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=urdJ4vOyPLzcUK5Cxnv5OHVwxsb_IL2JujbDDacGIV0"
         def testNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
 
-        // Define the New Relic API URL
-        def NEW_RELIC_API_URL = 'https://api.newrelic.com/v2/applications/{appName}/deployments.json'
+        // Check if the target environment is 'test'
+        if (params.TARGET_ENVIRONMENT != 'test') {
+            // Define the New Relic API URL
+            def NEW_RELIC_API_URL = 'https://api.newrelic.com/v2/applications/{appName}/deployments.json'
 
-        // Define the app ID arrays
-        def NEW_RELIC_APP_IDS = [ // Production
-            'archives': 1162084919,
-            'api': 1354151907,
-            'dotie': 1273358703,
-            'feeds': 1278183236,
-            'jpegresizer': 1354153467,
-            'mediafeeds': 1288836505,
-            'news': 1309460001,
-            'newsapi': 1175287917,
-            'rteavgen': 1384472309,
-            'webhooks': 1244934873
-        ]
-
-        def NEW_RELIC_APP_IDS_BETA = [
-            'archives': 1343752849,
-            'api': 1354574881,
-            'dotie': 1326627090,
-            'feeds': 1204841593,
-            'jpegresizer': 1121917174,
-            'mediafeeds': 1165377349,
-            'news': 1362707706,
-            'newsapi': 1296099945,
-            'rteavgen': 1250547311,
-            'webhooks': 1244732569
-        ]
-
-        def NEW_RELIC_APP_IDS_DEV = [
-            'api': 1260879206,
-            'dotie': 1245684946,
-            'archives': 1295804988,
-            'feeds': 1265649480,
-            'jpegresizer': 1292889609,
-            'news': 1291326095,
-            'newsapi': 1260879196,
-            'rteavgen': 1384442476,
-            'webhooks': 1183285327
-        ]
-
-        def NEW_RELIC_APP_IDS_NEXT = [
-            'api': 1352406894,
-            'dotie': 1258781423,
-            'archives': 1295178005,
-            'feeds': 1265670781,
-            'jpegresizer': 1319499070,
-            'news': 1309456381,
-            'newsapi': 1260886891,
-            'rteavgen': 1384470052
-        ]
-
-        def NEW_RELIC_APP_IDS_UAT = [
-            'api': 1363437947,
-            'dotie': 1347178004,
-            'archives': 1381026066,
-            'feeds': 1379506271,
-            'jpegresizer': 1386066164,
-            'newsapi': 1376763271,
-            'rteavgen': 1386120661
-        ]
-
-
-        // Determine the app ID array to use based on the environment
-        def appIds
-        switch (params.TARGET_ENVIRONMENT) {
-            case 'beta':
-                appIds = NEW_RELIC_APP_IDS_BETA
-                break
-            case 'development':
-                appIds = NEW_RELIC_APP_IDS_DEV
-                break
-            case 'prod':
-                appIds = NEW_RELIC_APP_IDS
-                break
-            case 'next':
-                appIds = NEW_RELIC_APP_IDS_NEXT
-                break
-            case 'uat':
-                appIds = NEW_RELIC_APP_IDS_UAT
-                break
-            default:
-                appIds = NEW_RELIC_APP_IDS_TEST // Default to test app IDs
-        }
-
-        // Determine the app ID to use
-        def appId = appIds[appName]
-
-        // Define other parameters
-        withCredentials([string(credentialsId: 'new-relic', variable: 'NEW_RELIC_API_KEY')]) {
-
-            // Get the current timestamp in the required format
-            def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
-
-            // Create the JSON payload
-            def payload = [
-                deployment: [
-                    description: "${deployer} deployed ${branchOrTag}",
-                    revision: branchOrTag,
-                    changelog: branchOrTag,
-                    user: deployer,
-                    timestamp: timestamp
-                ]
+            // Define the app ID arrays
+            def NEW_RELIC_APP_IDS = [ // Production
+                'archives': 1162084919,
+                'api': 1354151907,
+                'dotie': 1273358703,
+                'feeds': 1278183236,
+                'jpegresizer': 1354153467,
+                'mediafeeds': 1288836505,
+                'news': 1309460001,
+                'newsapi': 1175287917,
+                'rteavgen': 1384472309,
+                'webhooks': 1244934873
             ]
 
-            // Check if the target environment is 'test'
-            if (params.TARGET_ENVIRONMENT != 'test') {
+            def NEW_RELIC_APP_IDS_BETA = [
+                'archives': 1343752849,
+                'api': 1354574881,
+                'dotie': 1326627090,
+                'feeds': 1204841593,
+                'jpegresizer': 1121917174,
+                'mediafeeds': 1165377349,
+                'news': 1362707706,
+                'newsapi': 1296099945,
+                'rteavgen': 1250547311,
+                'webhooks': 1244732569
+            ]
+
+            def NEW_RELIC_APP_IDS_DEV = [
+                'api': 1260879206,
+                'dotie': 1245684946,
+                'archives': 1295804988,
+                'feeds': 1265649480,
+                'jpegresizer': 1292889609,
+                'news': 1291326095,
+                'newsapi': 1260879196,
+                'rteavgen': 1384442476,
+                'webhooks': 1183285327
+            ]
+
+            def NEW_RELIC_APP_IDS_NEXT = [
+                'api': 1352406894,
+                'dotie': 1258781423,
+                'archives': 1295178005,
+                'feeds': 1265670781,
+                'jpegresizer': 1319499070,
+                'news': 1309456381,
+                'newsapi': 1260886891,
+                'rteavgen': 1384470052
+            ]
+
+            def NEW_RELIC_APP_IDS_UAT = [
+                'api': 1363437947,
+                'dotie': 1347178004,
+                'archives': 1381026066,
+                'feeds': 1379506271,
+                'jpegresizer': 1386066164,
+                'newsapi': 1376763271,
+                'rteavgen': 1386120661
+            ]
+
+            // Determine the app ID array to use based on the environment
+            def appIds
+            switch (params.TARGET_ENVIRONMENT) {
+                case 'beta':
+                    appIds = NEW_RELIC_APP_IDS_BETA
+                    break
+                case 'development':
+                    appIds = NEW_RELIC_APP_IDS_DEV
+                    break
+                case 'prod':
+                    appIds = NEW_RELIC_APP_IDS
+                    break
+                case 'next':
+                    appIds = NEW_RELIC_APP_IDS_NEXT
+                    break
+                case 'uat':
+                    appIds = NEW_RELIC_APP_IDS_UAT
+                    break
+                default:
+                    appIds = NEW_RELIC_APP_IDS_TEST // Default to test app IDs
+            }
+
+            // Determine the app ID to use
+            def appId = appIds[appName]
+
+            // Define other parameters
+            withCredentials([string(credentialsId: 'new-relic', variable: 'NEW_RELIC_API_KEY')]) {
+
+                // Get the current timestamp in the required format
+                def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+
+                // Create the JSON payload
+                def payload = [
+                    deployment: [
+                        description: "${deployer} deployed ${branchOrTag}",
+                        revision: branchOrTag,
+                        changelog: branchOrTag,
+                        user: deployer,
+                        timestamp: timestamp
+                    ]
+                ]
+
                 // Make the POST request
                 def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
                 new URL(url).openConnection().with { connection ->
@@ -146,9 +145,9 @@ def call(Map args) {
                     println "Response Code: \\${responseCode}"
                     println "Response Message: \\${responseMessage}"
                 }
-            } else {
-                echo "Skipping New Relic connection for test environment."
             }
+        } else {
+            echo "Skipping New Relic connection for test environment."
         }
 
         // Trigger external workflow only for CI-CD or UD workflows
