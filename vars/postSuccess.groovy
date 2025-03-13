@@ -49,7 +49,7 @@ def call(Map args) {
         ]
 
         def NEW_RELIC_APP_IDS_DEV = [
-            'api': 1348165422,
+            'api': 1260879206,
             'dotie': 1245684946,
             'archives': 1295804988,
             'feeds': 1265649480,
@@ -108,43 +108,42 @@ def call(Map args) {
         def appId = appIds[appName]
 
         // Define other parameters
-        def NEW_RELIC_API_KEY = credentials('new-relic').toString() 
-        echo "Fetched API Key: ${NEW_RELIC_API_KEY.substring(0, 4)}****"
-        
+        withCredentials([string(credentialsId: 'new-relic', variable: 'NEW_RELIC_API_KEY')]) {
 
-        // Get the current timestamp in the required format
-        def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+            // Get the current timestamp in the required format
+            def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
 
-        // Create the JSON payload
-        def payload = [
-            deployment: [
-                description: "${deployer} deployed ${branchOrTag}",
-                revision: branchOrTag,
-                changelog: branchOrTag,
-                user: deployer,
-                timestamp: timestamp
+            // Create the JSON payload
+            def payload = [
+                deployment: [
+                    description: "${deployer} deployed ${branchOrTag}",
+                    revision: branchOrTag,
+                    changelog: branchOrTag,
+                    user: deployer,
+                    timestamp: timestamp
+                ]
             ]
-        ]
 
-        // Make the POST request
-        def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
-        new URL(url).openConnection().with { connection ->
-            connection.setRequestMethod("POST")
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY.toString())
-            connection.doOutput = true
+            // Make the POST request
+            def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
+            new URL(url).openConnection().with { connection ->
+                connection.setRequestMethod("POST")
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
+                connection.doOutput = true
 
-            // Write the payload to the request
-            def writer = new OutputStreamWriter(connection.outputStream)
-            writer.write(JsonOutput.toJson(payload))
-            writer.flush()
-            writer.close()
+                // Write the payload to the request
+                def writer = new OutputStreamWriter(connection.outputStream)
+                writer.write(JsonOutput.toJson(payload))
+                writer.flush()
+                writer.close()
 
-            // Get the response
-            def responseCode = connection.responseCode
-            def responseMessage = connection.responseMessage
-            println "Response Code: ${responseCode}"
-            println "Response Message: ${responseMessage}"
+                // Get the response
+                def responseCode = connection.responseCode
+                def responseMessage = connection.responseMessage
+                println "Response Code: ${responseCode}"
+                println "Response Message: ${responseMessage}"
+            }
         }
 
         // Trigger external workflow only for CI-CD or UD workflows
