@@ -124,25 +124,30 @@ def call(Map args) {
                 ]
             ]
 
-            // Make the POST request
-            def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
-            new URL(url).openConnection().with { connection ->
-                connection.setRequestMethod("POST")
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
-                connection.doOutput = true
+            // Check if the target environment is 'test'
+            if (params.TARGET_ENVIRONMENT != 'test') {
+                // Make the POST request
+                def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
+                new URL(url).openConnection().with { connection ->
+                    connection.setRequestMethod("POST")
+                    connection.setRequestProperty("Content-Type", "application/json")
+                    connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
+                    connection.doOutput = true
 
-                // Write the payload to the request
-                def writer = new OutputStreamWriter(connection.outputStream)
-                writer.write(JsonOutput.toJson(payload))
-                writer.flush()
-                writer.close()
+                    // Write the payload to the request
+                    def writer = new OutputStreamWriter(connection.outputStream)
+                    writer.write(JsonOutput.toJson(payload))
+                    writer.flush()
+                    writer.close()
 
-                // Get the response
-                def responseCode = connection.responseCode
-                def responseMessage = connection.responseMessage
-                println "Response Code: ${responseCode}"
-                println "Response Message: ${responseMessage}"
+                    // Get the response
+                    def responseCode = connection.responseCode
+                    def responseMessage = connection.responseMessage
+                    println "Response Code: \\${responseCode}"
+                    println "Response Message: \\${responseMessage}"
+                }
+            } else {
+                echo "Skipping New Relic connection for test environment."
             }
         }
 
