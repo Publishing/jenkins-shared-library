@@ -9,7 +9,15 @@ def call(Map args) {
                 env.RELEASE_DATE = sh(script: 'date +%d%m%y%H%M', returnStdout: true).trim()
                 def currentVersion = sh(script: "if [ -f ${versionFile} ]; then cat ${versionFile}; else echo 'V1.0.0'; fi", returnStdout: true).trim()
                 def (major, minor, patch) = currentVersion.replaceAll("V", "").tokenize('.')
-                def newPatch = patch.toInteger() + 1
+                
+                // Increment logic
+                if (patch.toInteger() >= 999) {
+                    minor = minor.toInteger() + 1
+                    patch = 1
+                } else {
+                    patch = patch.toInteger() + 1
+                }
+                
                 def deploymentWorkflowTriggerUrl = "https://prod-03.westeurope.logic.azure.com:443/workflows/00bd6ccdd7294f05b7976ce4ab486184/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZIlo779OiLoT4AYlsf9D04qxVmXfAyLU_mCgG3FEudg"
                 def udWorkflowTriggerUrl = "https://prod-74.westeurope.logic.azure.com:443/workflows/5f19d988580e45d38016d4231e957164/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zi8h07d_txYVm6O6bDucST9dQ4PcczzXV-K_F9FN2Mc"
 
@@ -35,7 +43,7 @@ def call(Map args) {
                     }
                 }
                     
-                env.NEW_VERSION = "V${major}.${minor}.${newPatch}"
+                env.NEW_VERSION = "V${major}.${minor}.${patch}"
                 sh "echo ${env.NEW_VERSION} > ${versionFile}"
                 env.RELEASE_NAME = "${appName}_release.${env.RELEASE_DATE}.${env.NEW_VERSION}"
                 echo "New release version: ${env.NEW_VERSION}"

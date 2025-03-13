@@ -97,19 +97,19 @@ WSGI
          # Change back to TARGET_DIR before cleaning up
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
          
-         # Clean up old releases only after successful collectstatic
-         for dir in \${APP_NAME}_release.*; do
-              DIR_VERSION=\$(echo "\$dir" | grep -oE 'V[0-9]+\.[0-9]+\.[0-9]+$')
-              if [[ "\$dir" != "\${RELEASE_NAME}" ]] && [[ "\$DIR_VERSION" =~ ^V[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                  compare_versions "\${DIR_VERSION#V}" "\${CURRENT_VERSION#V}"
-                  if [[ \$? -eq 1 ]]; then
-                      log_info "Deleting old release folder: \${dir}"
-                      rm -rf "\${dir}"
-                  else
-                      log_info "Keeping release folder: \${dir}"
-                  fi
-              fi
+         # Sort the directories by version and keep the latest two
+         sorted_dirs=($(ls -d ${APP_NAME}_release.* | sort -t. -k3,3n -k4,4n -k5,5n))
+
+         # Keep the latest two builds
+         for ((i=0; i<${#sorted_dirs[@]}-2; i++)); do
+             dir=${sorted_dirs[i]}
+             log_info "Deleting old release folder: ${dir}"
+             rm -rf "${dir}"
          done
+
+         # Log the kept directories
+         log_info "Keeping latest release folder: ${sorted_dirs[-1]}"
+         log_info "Keeping previous release folder: ${sorted_dirs[-2]}"
 
          # Change back to TARGET_DIR so the symlink is created in the correct location
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
