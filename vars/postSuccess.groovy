@@ -108,7 +108,7 @@ def call(Map args) {
         def appId = appIds[appName]
 
         // Define other parameters
-        def NEW_RELIC_API_KEY = credentials('new-relic') 
+        def NEW_RELIC_API_KEY = credentials('new-relic').toString() 
         
 
         // Get the current timestamp in the required format
