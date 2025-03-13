@@ -108,7 +108,7 @@ def call(Map args) {
         def appId = appIds[appName]
 
         // Define other parameters
-        def NEW_RELIC_API_KEY = 'NRAK-PQBPUODXM90M7HFE6EIP1TTYEUC' 
+        def NEW_RELIC_API_KEY = credentials('new-relic') 
 
         // Get the current timestamp in the required format
         def timestamp = ZonedDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"))
