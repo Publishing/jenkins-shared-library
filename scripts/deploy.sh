@@ -97,12 +97,12 @@ WSGI
          # Change back to TARGET_DIR before cleaning up
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
          
-         # Sort the directories by version and keep the latest two
+         # Sort the directories by version using a custom sort function
          sorted_dirs=($(ls -d ${APP_NAME}_release.* | sort -t. -k3,3n -k4,4n -k5,5n))
 
-         # Debugging: Log the sorted directories
-         for dir in "\${sorted_dirs[@]}"; do
-             echo "Directory: \$dir"
+         # Debugging: Log the sorted directories with indices
+         for index in "${!sorted_dirs[@]}"; do
+             echo "Index: \$index, Directory: \${sorted_dirs[\$index]}"
          done
 
          # Keep the latest two builds
@@ -111,9 +111,9 @@ WSGI
              rm -rf "\${sorted_dirs[$i]}"
          done
 
-         # Log the kept directories
-         log_info "Keeping latest release folder: \${sorted_dirs[-1]}"
-         log_info "Keeping previous release folder: \${sorted_dirs[-2]}"
+         # Log the kept directories with indices
+         log_info "Keeping latest release folder: Index: \${#sorted_dirs[@]}-1, Directory: \${sorted_dirs[-1]}"
+         log_info "Keeping previous release folder: Index: \${#sorted_dirs[@]}-2, Directory: \${sorted_dirs[-2]}"
 
          # Change back to TARGET_DIR so the symlink is created in the correct location
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
