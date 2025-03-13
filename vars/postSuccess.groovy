@@ -88,7 +88,7 @@ def call(Map args) {
             case 'beta':
                 appIds = NEW_RELIC_APP_IDS_BETA
                 break
-            case 'dev':
+            case 'development':
                 appIds = NEW_RELIC_APP_IDS_DEV
                 break
             case 'prod':
