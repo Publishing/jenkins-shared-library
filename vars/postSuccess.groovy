@@ -15,6 +15,99 @@ def call(Map args) {
         def udWorkflowTriggerUrl = "https://prod-96.westeurope.logic.azure.com:443/workflows/5eb03b72dde44648aab564d9754309f2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=urdJ4vOyPLzcUK5Cxnv5OHVwxsb_IL2JujbDDacGIV0"
         def testNotificationWorkflowUrl = "https://prod-28.westeurope.logic.azure.com:443/workflows/627e297c3a034f44b60a723a67656dfc/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZOpRzUn460kzxkMLwf1nh0etTnJM3GT2PdSecXasm-w"
 
+        // Define the New Relic API URL
+        def NEW_RELIC_API_URL = 'https://api.newrelic.com/v2/applications/{appName}/deployments.json'
+
+        // Define the app ID arrays
+        def NEW_RELIC_APP_IDS = [ // Production
+            'archives': 1162084919,
+            'api': 1354151907,
+            'dotie': 1273358703,
+            'feeds': 1278183236,
+            'jpegresizer': 1354153467,
+            'mediafeeds': 1288836505,
+            'news': 1309460001,
+            'newsapi': 1175287917,
+            'rteavgen': 1384472309,
+            'webhooks': 1244934873
+        ]
+
+        def NEW_RELIC_APP_IDS_BETA = [
+            'archives': 1343752849,
+            'api': 1354574881,
+            'dotie': 1326627090,
+            'feeds': 1204841593,
+            'jpegresizer': 1121917174,
+            'mediafeeds': 1165377349,
+            'news': 1362707706,
+            'newsapi': 1296099945,
+            'rteavgen': 1250547311,
+            'webhooks': 1244732569
+        ]
+
+        def NEW_RELIC_APP_IDS_DEV = [
+            // Add your dev app IDs here
+        ]
+
+        def NEW_RELIC_APP_IDS_TEST = [
+            // Add your test app IDs here
+        ]
+
+        // Determine the app ID array to use based on the environment
+        def appIds
+        switch (params.TARGET_ENVIRONMENT) {
+            case 'beta':
+                appIds = NEW_RELIC_APP_IDS_BETA
+                break
+            case 'dev':
+                appIds = NEW_RELIC_APP_IDS_DEV
+                break
+            case 'prod':
+                appIds = NEW_RELIC_APP_IDS
+                break
+            default:
+                appIds = NEW_RELIC_APP_IDS_TEST // Default to test app IDs
+        }
+
+        // Determine the app ID to use
+        def appId = appIds[appName]
+
+        // Define other parameters
+        def NEW_RELIC_API_KEY = 'NRAK-PQBPUODXM90M7HFE6EIP1TTYEUC' 
+
+        // Get the current timestamp in the required format
+        def timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(new Date())
+
+        // Create the JSON payload
+        def payload = [
+            deployment: [
+                description: "${deployer} deployed ${branchOrTag}",
+                revision: branchOrTag,
+                changelog: branchOrTag,
+                user: deployer,
+                timestamp: timestamp
+            ]
+        ]
+
+        // Make the POST request
+        def url = NEW_RELIC_API_URL.replace("{appName}", appId.toString())
+        def connection = new URL(url).openConnection() as HttpURLConnection
+        connection.setRequestMethod("POST")
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.setRequestProperty("X-Api-Key", NEW_RELIC_API_KEY)
+        connection.doOutput = true
+
+        // Write the payload to the request
+        def writer = new OutputStreamWriter(connection.outputStream)
+        writer.write(JsonOutput.toJson(payload))
+        writer.flush()
+        writer.close()
+
+        // Get the response
+        def responseCode = connection.responseCode
+        def responseMessage = connection.responseMessage
+        println "Response Code: ${responseCode}"
+        println "Response Message: ${responseMessage}"
 
         // Trigger external workflow only for CI-CD or UD workflows
         if (params.SELECT_WORK_FLOW in ['CI-CD', 'UD']) {
