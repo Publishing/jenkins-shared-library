@@ -49,7 +49,7 @@ def call(Map args) {
         ]
 
         def NEW_RELIC_APP_IDS_DEV = [
-            'api': 1260879206,
+            'api': 1348165422,
             'dotie': 1245684946,
             'archives': 1295804988,
             'feeds': 1265649480,
