@@ -144,6 +144,7 @@ WSGI
               # Rename the current (broken) deployment package
               log_info "Renaming broken deployment package: \${TARGET_DIR}/\${RELEASE_NAME} to \${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
               mv "\${TARGET_DIR}/\${RELEASE_NAME}" "\${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
+              log_error "collectstatic command failed. Reverted to previous deployment."
          fi
          exit 1
     fi
