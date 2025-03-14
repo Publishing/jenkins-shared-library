@@ -108,8 +108,7 @@ WSGI
          done
 
          # Check if there are enough directories to delete
-         if [ \
-             \${#sorted_dirs[@]} -gt 2 ]; then
+         if [ \${#sorted_dirs[@]} -gt 2 ]; then
              for ((i=0; i < \${#sorted_dirs[@]} - 2; i++)); do
                  log_info "Deleting old release: \${sorted_dirs[$i]}"
                  rm -rf "\${sorted_dirs[$i]}"
