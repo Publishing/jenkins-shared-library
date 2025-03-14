@@ -107,7 +107,7 @@ WSGI
          # Print directories to be deleted
          log_info "Directories to be deleted:"
          ls -t | grep '^api_release' | tail -n +3 | while IFS= read -r old_release; do
-             echo "DEBUG - Would remove: \$old_release"
+             echo "Removing: \"$old_release\""
          done
 
          # Check permissions and timestamps
@@ -119,7 +119,8 @@ WSGI
 
          # Remove older releases, keeping only the last two
          ls -t | grep '^api_release' | tail -n +3 | while IFS= read -r old_release; do
-             rm -rf -- \$old_release
+             echo "Removing: \"$old_release\""
+             rm -rf -- "$old_release"
          done
 
          # Log the kept directories
