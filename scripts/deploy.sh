@@ -97,28 +97,24 @@ WSGI
          # Change back to TARGET_DIR before cleaning up
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
          
-         # Define the deployment directory
-         DEPLOY_DIR="/opt/wsgiapps/api/"
-         cd $DEPLOY_DIR || log_error "Failed to change directory to $DEPLOY_DIR"
-
          # Verify current directory
          log_info "Current directory: \$(pwd)"
 
          # Print directories to be deleted (excluding @tmp)
          log_info "Directories to be deleted:"
-         ls -dt api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
+         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
              echo "Removing: \"\$old_release\""
          done
 
          # Check permissions and timestamps (excluding @tmp)
          log_info "Checking permissions and timestamps for directories:"
-         for dir in \$(ls -dt api_release.* | grep -v '@tmp'); do
+         for dir in \$(ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp'); do
              echo "Directory: \$dir"
              stat "\$dir"
          done
 
          # Remove older releases (excluding @tmp)
-         ls -dt api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
+         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
              echo "Removing: \"\$old_release\""
              rm -rf -- "\$old_release"
          done
