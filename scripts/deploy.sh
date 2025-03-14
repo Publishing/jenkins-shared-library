@@ -101,6 +101,20 @@ WSGI
          DEPLOY_DIR="/opt/wsgiapps/api/"
          cd $DEPLOY_DIR || log_error "Failed to change directory to $DEPLOY_DIR"
 
+         # Verify current directory
+         log_info "Current directory: $(pwd)"
+
+         # Print directories to be deleted
+         log_info "Directories to be deleted:"
+         ls -t | grep '^api_release' | tail -n +3 | xargs echo "DEBUG - Would remove:"
+
+         # Check permissions and timestamps
+         log_info "Checking permissions and timestamps for directories:"
+         for dir in $(ls -t | grep '^api_release'); do
+             log_info "Directory: $dir"
+             stat "$dir"
+         done
+
          # Remove older releases, keeping only the last two
          ls -t | grep '^api_release' | tail -n +3 | xargs rm -rf
 
