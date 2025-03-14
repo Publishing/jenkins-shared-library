@@ -107,11 +107,16 @@ WSGI
              echo "Index: \$index, Directory: \${sorted_dirs[\$index]}"
          done
 
-         # Delete all but the latest two builds
-         for ((i=0; i < \${#sorted_dirs[@]} - 2; i++)); do
-             log_info "Deleting old release: \${sorted_dirs[$i]}"
-             rm -rf "\${sorted_dirs[$i]}"
-         done
+         # Check if there are enough directories to delete
+         if [ \
+             \${#sorted_dirs[@]} -gt 2 ]; then
+             for ((i=0; i < \${#sorted_dirs[@]} - 2; i++)); do
+                 log_info "Deleting old release: \${sorted_dirs[$i]}"
+                 rm -rf "\${sorted_dirs[$i]}"
+             done
+         else
+             log_info "Not enough directories to delete. Current count: \${#sorted_dirs[@]}"
+         fi
 
          # Log the kept directories
          log_info "Keeping previous release folder: \${sorted_dirs[-2]}"
