@@ -84,7 +84,7 @@ WSGI
     log_info "Running collectstatic command"
     mkdir -p /srv/wsgiapps/web/static/\${APP_NAME}
     cd "\${TARGET_DIR}/${RELEASE_NAME}/" || log_error "Failed to change directory to \${TARGET_DIR}/${RELEASE_NAME}/"
-    if python -m pipenv run ollectstatic --settings "\${SETTINGS_FILE}"; then
+    if python -m pipenv run collectstatic --settings "\${SETTINGS_FILE}"; then
          log_info "collectstatic command succeeded."
          COLLECTSTATIC_SUCCESS=true
     else
@@ -103,7 +103,7 @@ WSGI
          # Print directories to be deleted (excluding @tmp)
          log_info "Directories to be deleted:"
          ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
-             echo "Removing: \"\$old_release\""
+             echo "Removing: "\$old_release""
          done
 
          # Check permissions and timestamps (excluding @tmp)
@@ -140,6 +140,10 @@ WSGI
               ln -sfn "\${PREV_DEPLOYMENT}" current || log_error "Failed to revert symlink"
               touch "\${PREV_DEPLOYMENT}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
               log_info "Reverted to previous deployment: \${PREV_DEPLOYMENT}"
+
+              # Rename the current (broken) deployment package
+              log_info "Renaming broken deployment package: \${TARGET_DIR}/\${RELEASE_NAME} to \${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
+              mv "\${TARGET_DIR}/\${RELEASE_NAME}" "\${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
          fi
          exit 1
     fi
