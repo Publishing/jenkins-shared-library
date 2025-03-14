@@ -100,21 +100,21 @@ WSGI
          # Verify current directory
          log_info "Current directory: \$(pwd)"
 
-         # Print directories to be deleted (excluding @tmp)
+         # Print directories to be deleted (excluding _BROKEN)
          log_info "Directories to be deleted:"
-         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
-             echo "Removing: "\$old_release""
+         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '_BROKEN' | tail -n +3 | while IFS= read -r old_release; do
+             echo "Removing: \"\$old_release\""
          done
 
-         # Check permissions and timestamps (excluding @tmp)
+         # Check permissions and timestamps (excluding _BROKEN)
          log_info "Checking permissions and timestamps for directories:"
-         for dir in \$(ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp'); do
+         for dir in \$(ls -dt "${TARGET_DIR}"/api_release.* | grep -v '_BROKEN'); do
              echo "Directory: \$dir"
              stat "\$dir"
          done
 
-         # Remove older releases (excluding @tmp)
-         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
+         # Remove older releases (excluding _BROKEN)
+         ls -dt "${TARGET_DIR}"/api_release.* | grep -v '_BROKEN' | tail -n +3 | while IFS= read -r old_release; do
              echo "Removing: \"\$old_release\""
              rm -rf -- "\$old_release"
          done
@@ -144,7 +144,7 @@ WSGI
               # Rename the current (broken) deployment package
               log_info "Renaming broken deployment package: \${TARGET_DIR}/\${RELEASE_NAME} to \${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
               mv "\${TARGET_DIR}/\${RELEASE_NAME}" "\${TARGET_DIR}/\${RELEASE_NAME}_BROKEN"
-              log_error "collectstatic command failed. Reverted to previous deployment."
+              log_error "collectstatic command failed. Reverting to previous deployment."
          fi
          exit 1
     fi
