@@ -135,7 +135,7 @@ WSGI
 
          log_info "*--------------- DEPLOYMENT COMPLETED FOR \${APP_NAME} ---------------*"
     else
-         log_error "collectstatic command failed. Reverting to previous deployment."
+         
          if [[ -n "\${PREV_DEPLOYMENT}" ]]; then
               ln -sfn "\${PREV_DEPLOYMENT}" current || log_error "Failed to revert symlink"
               touch "\${PREV_DEPLOYMENT}/conf/wsgi.py" || log_error "Failed to touch wsgi.py for restart"
