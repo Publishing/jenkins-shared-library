@@ -97,29 +97,15 @@ WSGI
          # Change back to TARGET_DIR before cleaning up
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
          
-         # Get a list of deployment directories that match the expected pattern (only directories)
-         sorted_dirs=($(find . -maxdepth 1 -type d -name "${APP_NAME}_release.*V[0-9]*.[0-9]*.[0-9]*" \
-             | sed 's|^\./||' \
-             | sort -V))
+         # Define the deployment directory
+         DEPLOY_DIR="/opt/wsgiapps/api/"
+         cd $DEPLOY_DIR || log_error "Failed to change directory to $DEPLOY_DIR"
 
-         # Debugging: Log the sorted directories with indices
-         for index in "${!sorted_dirs[@]}"; do
-             echo "Index: \$index, Directory: \${sorted_dirs[\$index]}"
-         done
-
-         # Check if there are enough directories to delete
-         if [ \${#sorted_dirs[@]} -gt 2 ]; then
-             for ((i=0; i < \${#sorted_dirs[@]} - 2; i++)); do
-                 log_info "Deleting old release: \${sorted_dirs[$i]}"
-                 rm -rf "\${sorted_dirs[$i]}"
-             done
-         else
-             log_info "Not enough directories to delete. Current count: \${#sorted_dirs[@]}"
-         fi
+         # Remove older releases, keeping only the last two
+         ls -t | grep '^api_release' | tail -n +3 | xargs rm -rf
 
          # Log the kept directories
-         log_info "Keeping previous release folder: \${sorted_dirs[-2]}"
-         log_info "Keeping latest release folder: \${sorted_dirs[-1]}"
+         log_info "Kept the latest two release folders."
 
          # Change back to TARGET_DIR so the symlink is created in the correct location
          cd "${TARGET_DIR}" || log_error "Failed to change directory to ${TARGET_DIR}"
