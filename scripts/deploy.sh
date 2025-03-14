@@ -106,7 +106,7 @@ WSGI
 
          # Print directories to be deleted
          log_info "Directories to be deleted:"
-         ls -t | grep '^api_release' | tail -n +3 | xargs echo "DEBUG - Would remove:"
+         ls -t | grep '^api_release' | tail -n +3 | xargs -I {} echo "DEBUG - Would remove: {}"
 
          # Check permissions and timestamps
          log_info "Checking permissions and timestamps for directories:"
@@ -116,7 +116,7 @@ WSGI
          done
 
          # Remove older releases, keeping only the last two
-         ls -t | grep '^api_release' | tail -n +3 | xargs rm -rf
+         ls -t | grep '^api_release' | tail -n +3 | xargs -I {} rm -rf "{}"
 
          # Log the kept directories
          log_info "Kept the latest two release folders."
