@@ -102,25 +102,25 @@ WSGI
          cd $DEPLOY_DIR || log_error "Failed to change directory to $DEPLOY_DIR"
 
          # Verify current directory
-         log_info "Current directory: $(pwd)"
+         log_info "Current directory: \$(pwd)"
 
          # Print directories to be deleted (excluding @tmp)
          log_info "Directories to be deleted:"
-         ls -t | grep '^api_release' | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
-             echo "Removing: \"$old_release\""
+         ls -dt api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
+             echo "Removing: \"\$old_release\""
          done
 
          # Check permissions and timestamps (excluding @tmp)
          log_info "Checking permissions and timestamps for directories:"
-         for dir in \$(ls -t | grep '^api_release' | grep -v '@tmp'); do
+         for dir in \$(ls -dt api_release.* | grep -v '@tmp'); do
              echo "Directory: \$dir"
              stat "\$dir"
          done
 
          # Remove older releases (excluding @tmp)
-         ls -t | grep '^api_release' | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
-             echo "Removing: \"$old_release\""
-             rm -rf -- "$old_release"
+         ls -dt api_release.* | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
+             echo "Removing: \"\$old_release\""
+             rm -rf -- "\$old_release"
          done
 
          # Log the kept directories
