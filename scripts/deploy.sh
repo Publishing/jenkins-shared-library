@@ -104,21 +104,21 @@ WSGI
          # Verify current directory
          log_info "Current directory: $(pwd)"
 
-         # Print directories to be deleted
+         # Print directories to be deleted (excluding @tmp)
          log_info "Directories to be deleted:"
-         ls -t | grep '^api_release' | tail -n +3 | while IFS= read -r old_release; do
+         ls -t | grep '^api_release' | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
              echo "Removing: \"$old_release\""
          done
 
-         # Check permissions and timestamps
+         # Check permissions and timestamps (excluding @tmp)
          log_info "Checking permissions and timestamps for directories:"
-         for dir in $(ls -t | grep '^api_release'); do
+         for dir in $(ls -t | grep '^api_release' | grep -v '@tmp'); do
              log_info "Directory: \$dir"
-             stat \$dir
+             stat "\$dir"
          done
 
-         # Remove older releases, keeping only the last two
-         ls -t | grep '^api_release' | tail -n +3 | while IFS= read -r old_release; do
+         # Remove older releases (excluding @tmp)
+         ls -t | grep '^api_release' | grep -v '@tmp' | tail -n +3 | while IFS= read -r old_release; do
              echo "Removing: \"$old_release\""
              rm -rf -- "$old_release"
          done
