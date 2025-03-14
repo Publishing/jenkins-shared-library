@@ -112,8 +112,8 @@ WSGI
 
          # Check permissions and timestamps (excluding @tmp)
          log_info "Checking permissions and timestamps for directories:"
-         for dir in $(ls -t | grep '^api_release' | grep -v '@tmp'); do
-             log_info "Directory: \$dir"
+         for dir in \$(ls -t | grep '^api_release' | grep -v '@tmp'); do
+             echo "Directory: \$dir"
              stat "\$dir"
          done
 
